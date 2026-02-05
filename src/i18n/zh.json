@@ -1,0 +1,198 @@
+{
+  "common": {
+    "appName": "直购易购",
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "all": "全部",
+    "more": "更多",
+    "back": "返回",
+    "next": "下一步",
+    "prev": "上一步",
+    "submit": "提交",
+    "close": "关闭"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "退出登录",
+    "register": "注册",
+    "email": "邮箱",
+    "password": "密码",
+    "phone": "手机号",
+    "verificationCode": "验证码",
+    "sendCode": "发送验证码",
+    "socialLogin": "社交登录",
+    "kakaoLogin": "Kakao登录",
+    "naverLogin": "Naver登录",
+    "googleLogin": "Google登录",
+    "wechatLogin": "微信登录",
+    "agreeTerms": "同意服务条款",
+    "agreePrivacy": "同意隐私政策"
+  },
+  "nav": {
+    "home": "首页",
+    "categories": "分类",
+    "sell": "发布",
+    "messages": "消息",
+    "mypage": "我的",
+    "search": "搜索",
+    "notifications": "通知"
+  },
+  "home": {
+    "banner": {
+      "title": "连接韩国与中国的",
+      "subtitle": "安全交易平台"
+    },
+    "featured": "推荐商品",
+    "koreaToChina": "韩国 → 中国",
+    "chinaToKorea": "中国 → 韩国",
+    "newProducts": "最新商品",
+    "popularProducts": "热门商品"
+  },
+  "post": {
+    "title": "标题",
+    "description": "描述",
+    "price": "价格",
+    "quantity": "数量",
+    "category": "分类",
+    "images": "商品图片",
+    "createSell": "发布出售",
+    "createBuy": "发布求购",
+    "editPost": "编辑",
+    "deletePost": "删除",
+    "status": {
+      "active": "销售中",
+      "soldOut": "售罄",
+      "expired": "已过期",
+      "hidden": "已隐藏"
+    },
+    "seller": "卖家",
+    "views": "浏览量",
+    "sales": "销量",
+    "buyNow": "立即购买",
+    "addToCart": "加入购物车",
+    "contact": "联系卖家"
+  },
+  "order": {
+    "title": "订单",
+    "orderNumber": "订单编号",
+    "orderDate": "下单时间",
+    "status": {
+      "pendingPayment": "待付款",
+      "paid": "已付款",
+      "shipping": "配送中",
+      "delivered": "已送达",
+      "confirmed": "已确认",
+      "disputed": "争议中",
+      "refunded": "已退款",
+      "cancelled": "已取消"
+    },
+    "itemPrice": "商品金额",
+    "shippingFee": "运费",
+    "platformFee": "手续费",
+    "totalPrice": "总计",
+    "shippingAddress": "收货地址",
+    "trackingNumber": "物流单号",
+    "confirmPurchase": "确认收货",
+    "requestRefund": "申请退款",
+    "openDispute": "申请仲裁"
+  },
+  "payment": {
+    "title": "支付",
+    "method": "支付方式",
+    "naverPay": "Naver Pay",
+    "kakaoPay": "Kakao Pay",
+    "alipay": "支付宝",
+    "wechatPay": "微信支付",
+    "creditCard": "信用卡",
+    "paypal": "PayPal",
+    "escrowInfo": "付款金额将安全托管，确认收货后结算给卖家。",
+    "pay": "立即支付"
+  },
+  "dispute": {
+    "title": "争议",
+    "reason": "争议原因",
+    "description": "详细说明",
+    "evidence": "证据图片",
+    "status": {
+      "open": "已受理",
+      "voting": "投票中",
+      "resolved": "已解决",
+      "appealed": "已申诉"
+    },
+    "vote": "投票",
+    "voteForBuyer": "支持买家",
+    "voteForSeller": "支持卖家",
+    "votingProgress": "投票进度",
+    "resolution": "处理结果"
+  },
+  "shipping": {
+    "title": "物流",
+    "company": "物流公司",
+    "trackPackage": "物流查询",
+    "selectCompany": "选择物流公司",
+    "preShipPhoto": "发货前照片",
+    "uploadPreShipPhoto": "请上传发货前商品照片"
+  },
+  "review": {
+    "title": "评价",
+    "writeReview": "写评价",
+    "rating": "评分",
+    "comment": "评价内容",
+    "photos": "上传图片"
+  },
+  "user": {
+    "profile": "个人资料",
+    "settings": "设置",
+    "myPosts": "我的发布",
+    "myOrders": "我的订单",
+    "mySales": "我的销售",
+    "myReviews": "我的评价",
+    "badge": {
+      "excellent": "优秀卖家",
+      "business": "企业认证",
+      "identity": "实名认证"
+    },
+    "stats": {
+      "totalSales": "总销售",
+      "totalPurchases": "总购买",
+      "rating": "评分",
+      "disputeRate": "争议率"
+    }
+  },
+  "ad": {
+    "title": "广告",
+    "bid": "竞价",
+    "currentBid": "当前最高价",
+    "minBid": "最低出价",
+    "myBid": "我的出价",
+    "bidHistory": "竞价记录",
+    "deadline": "截止时间",
+    "winner": "中标",
+    "lost": "落标"
+  },
+  "admin": {
+    "dashboard": "管理后台",
+    "users": "用户管理",
+    "posts": "商品管理",
+    "orders": "订单管理",
+    "disputes": "争议管理",
+    "settlements": "结算管理",
+    "businessVerify": "企业认证审核"
+  },
+  "error": {
+    "notFound": "页面不存在",
+    "unauthorized": "请先登录",
+    "forbidden": "无访问权限",
+    "serverError": "服务器错误",
+    "networkError": "网络错误"
+  }
+}

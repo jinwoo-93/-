@@ -1,0 +1,198 @@
+{
+  "common": {
+    "appName": "직구역구",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "confirm": "확인",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "all": "전체",
+    "more": "더보기",
+    "back": "뒤로",
+    "next": "다음",
+    "prev": "이전",
+    "submit": "제출",
+    "close": "닫기"
+  },
+  "auth": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "register": "회원가입",
+    "email": "이메일",
+    "password": "비밀번호",
+    "phone": "휴대폰 번호",
+    "verificationCode": "인증번호",
+    "sendCode": "인증번호 발송",
+    "socialLogin": "소셜 로그인",
+    "kakaoLogin": "카카오로 로그인",
+    "naverLogin": "네이버로 로그인",
+    "googleLogin": "Google로 로그인",
+    "wechatLogin": "WeChat으로 로그인",
+    "agreeTerms": "이용약관에 동의합니다",
+    "agreePrivacy": "개인정보 처리방침에 동의합니다"
+  },
+  "nav": {
+    "home": "홈",
+    "categories": "카테고리",
+    "sell": "판매하기",
+    "messages": "메시지",
+    "mypage": "마이페이지",
+    "search": "검색",
+    "notifications": "알림"
+  },
+  "home": {
+    "banner": {
+      "title": "한국과 중국을 연결하는",
+      "subtitle": "안전한 직거래 플랫폼"
+    },
+    "featured": "추천 상품",
+    "koreaToChina": "한국 → 중국",
+    "chinaToKorea": "중국 → 한국",
+    "newProducts": "최신 상품",
+    "popularProducts": "인기 상품"
+  },
+  "post": {
+    "title": "제목",
+    "description": "설명",
+    "price": "가격",
+    "quantity": "수량",
+    "category": "카테고리",
+    "images": "상품 이미지",
+    "createSell": "판매글 작성",
+    "createBuy": "구매글 작성",
+    "editPost": "글 수정",
+    "deletePost": "글 삭제",
+    "status": {
+      "active": "판매중",
+      "soldOut": "품절",
+      "expired": "만료됨",
+      "hidden": "숨김"
+    },
+    "seller": "판매자",
+    "views": "조회수",
+    "sales": "판매량",
+    "buyNow": "바로 구매",
+    "addToCart": "장바구니",
+    "contact": "문의하기"
+  },
+  "order": {
+    "title": "주문",
+    "orderNumber": "주문번호",
+    "orderDate": "주문일시",
+    "status": {
+      "pendingPayment": "결제 대기",
+      "paid": "결제 완료",
+      "shipping": "배송 중",
+      "delivered": "배송 완료",
+      "confirmed": "구매 확정",
+      "disputed": "분쟁 중",
+      "refunded": "환불 완료",
+      "cancelled": "취소됨"
+    },
+    "itemPrice": "상품 금액",
+    "shippingFee": "배송비",
+    "platformFee": "수수료",
+    "totalPrice": "총 결제금액",
+    "shippingAddress": "배송지",
+    "trackingNumber": "운송장 번호",
+    "confirmPurchase": "구매 확정",
+    "requestRefund": "환불 요청",
+    "openDispute": "분쟁 신청"
+  },
+  "payment": {
+    "title": "결제",
+    "method": "결제 수단",
+    "naverPay": "네이버페이",
+    "kakaoPay": "카카오페이",
+    "alipay": "알리페이",
+    "wechatPay": "위챗페이",
+    "creditCard": "신용카드",
+    "paypal": "페이팔",
+    "escrowInfo": "결제 금액은 안전하게 에스크로로 보관되며, 구매 확정 후 판매자에게 정산됩니다.",
+    "pay": "결제하기"
+  },
+  "dispute": {
+    "title": "분쟁",
+    "reason": "분쟁 사유",
+    "description": "상세 설명",
+    "evidence": "증거 이미지",
+    "status": {
+      "open": "접수됨",
+      "voting": "투표 진행 중",
+      "resolved": "해결됨",
+      "appealed": "이의 제기됨"
+    },
+    "vote": "투표하기",
+    "voteForBuyer": "구매자 지지",
+    "voteForSeller": "판매자 지지",
+    "votingProgress": "투표 현황",
+    "resolution": "처리 결과"
+  },
+  "shipping": {
+    "title": "배송",
+    "company": "배송업체",
+    "trackPackage": "배송 조회",
+    "selectCompany": "배송업체 선택",
+    "preShipPhoto": "발송 전 사진",
+    "uploadPreShipPhoto": "발송 전 상품 사진을 업로드해주세요"
+  },
+  "review": {
+    "title": "리뷰",
+    "writeReview": "리뷰 작성",
+    "rating": "평점",
+    "comment": "리뷰 내용",
+    "photos": "사진 첨부"
+  },
+  "user": {
+    "profile": "프로필",
+    "settings": "설정",
+    "myPosts": "내 게시글",
+    "myOrders": "주문 내역",
+    "mySales": "판매 내역",
+    "myReviews": "리뷰 관리",
+    "badge": {
+      "excellent": "우수 판매자",
+      "business": "사업자 인증",
+      "identity": "본인 인증"
+    },
+    "stats": {
+      "totalSales": "총 판매",
+      "totalPurchases": "총 구매",
+      "rating": "평점",
+      "disputeRate": "분쟁률"
+    }
+  },
+  "ad": {
+    "title": "광고",
+    "bid": "입찰",
+    "currentBid": "현재 최고가",
+    "minBid": "최소 입찰가",
+    "myBid": "내 입찰가",
+    "bidHistory": "입찰 내역",
+    "deadline": "마감일",
+    "winner": "낙찰",
+    "lost": "패찰"
+  },
+  "admin": {
+    "dashboard": "관리자 대시보드",
+    "users": "회원 관리",
+    "posts": "게시글 관리",
+    "orders": "주문 관리",
+    "disputes": "분쟁 관리",
+    "settlements": "정산 관리",
+    "businessVerify": "사업자 인증 심사"
+  },
+  "error": {
+    "notFound": "페이지를 찾을 수 없습니다",
+    "unauthorized": "로그인이 필요합니다",
+    "forbidden": "접근 권한이 없습니다",
+    "serverError": "서버 오류가 발생했습니다",
+    "networkError": "네트워크 오류가 발생했습니다"
+  }
+}

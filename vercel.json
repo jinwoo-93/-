@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/exchange-rate/update",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/orders/auto-confirm",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/ads/weekly-close",
+      "schedule": "0 1 * * 1"
+    },
+    {
+      "path": "/api/disputes/process-expired",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
