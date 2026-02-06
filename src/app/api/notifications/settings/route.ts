@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 /**
@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
  */
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -49,7 +49,7 @@ export async function GET() {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -137,7 +137,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },

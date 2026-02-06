@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     // 거래 방향 필터
     if (direction) {
-      where.direction = direction as any;
+      where.tradeDirection = direction as any;
     }
 
     // 가격 범위 필터
@@ -93,9 +93,10 @@ export async function GET(request: NextRequest) {
         priceKRW: true,
         priceCNY: true,
         images: true,
-        direction: true,
+        tradeDirection: true,
         status: true,
         viewCount: true,
+        salesCount: true,
         createdAt: true,
         category: {
           select: {
@@ -104,17 +105,12 @@ export async function GET(request: NextRequest) {
             nameZh: true,
           },
         },
-        seller: {
+        user: {
           select: {
             id: true,
-            name: true,
-            image: true,
+            nickname: true,
+            profileImage: true,
             averageRating: true,
-          },
-        },
-        _count: {
-          select: {
-            reviews: true,
           },
         },
       },

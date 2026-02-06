@@ -48,12 +48,19 @@ export interface Post {
   category?: Category;
   priceKRW: number;
   priceCNY: number;
+  originalPriceKRW?: number | null;
+  originalPriceCNY?: number | null;
   quantity: number;
   images: string[];
   status: PostStatus;
   viewCount: number;
   salesCount: number;
+  commentCount?: number;
+  wishCount?: number;
   reorderRate: number;
+  isBest?: boolean;
+  isNew?: boolean;
+  hasEscrow?: boolean;
   createdAt: string;
   updatedAt: string;
   expiresAt?: string | null;
@@ -121,6 +128,7 @@ export interface Order {
   shippedAt?: string | null;
   deliveredAt?: string | null;
   confirmedAt?: string | null;
+  reviews?: Review[];
   createdAt: string;
   updatedAt: string;
 }
@@ -204,6 +212,7 @@ export interface Review {
 // 배송업체 타입
 export interface ShippingCompany {
   id: string;
+  code?: string | null;
   name: string;
   nameZh: string;
   logo?: string | null;

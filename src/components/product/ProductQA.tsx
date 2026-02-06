@@ -371,7 +371,7 @@ function QAItem({
                   </Badge>
                 )}
                 <span className="text-xs text-muted-foreground">
-                  {formatRelativeTime(new Date(qa.createdAt), language)}
+                  {formatRelativeTime(new Date(qa.createdAt), language as 'ko' | 'zh')}
                 </span>
               </div>
               <p className="text-sm mt-1">{questionText}</p>
@@ -416,7 +416,7 @@ function QAItem({
                 </Badge>
                 {qa.answeredAt && (
                   <span className="text-xs text-muted-foreground">
-                    {formatRelativeTime(new Date(qa.answeredAt), language)}
+                    {formatRelativeTime(new Date(qa.answeredAt), language as 'ko' | 'zh')}
                   </span>
                 )}
               </div>

@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { orderCreateSchema } from '@/lib/validations';
 import { generateOrderNumber, calculatePlatformFee } from '@/lib/utils';
 import { FEE_RATES } from '@/lib/constants';
+import { OrderStatus } from '@prisma/client';
 
 // 주문 목록 조회
 export async function GET(request: NextRequest) {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       ...(role === 'buyer'
         ? { buyerId: session.user.id }
         : { sellerId: session.user.id }),
-      ...(status && { status }),
+      ...(status && { status: status as OrderStatus }),
     };
 
     const [orders, total] = await Promise.all([

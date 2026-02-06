@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 const VALID_TARGET_TYPES = ['POST', 'USER', 'REVIEW', 'CHAT'] as const;
@@ -20,7 +20,7 @@ const VALID_REASONS = [
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 자신의 게시글은 신고 불가
-      if (post.sellerId === session.user.id) {
+      if (post.userId === session.user.id) {
         return NextResponse.json(
           { success: false, error: { code: 'FORBIDDEN', message: '자신의 게시글은 신고할 수 없습니다.' } },
           { status: 403 }
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },

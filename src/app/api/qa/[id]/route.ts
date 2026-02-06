@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 interface RouteContext {
@@ -15,7 +15,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const qaId = params.id;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -37,9 +37,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // Q&A 조회
     const qa = await prisma.productQA.findUnique({
       where: { id: qaId },
-      include: {
-        // Post와 관계가 없으므로 별도 조회
-      },
     });
 
     if (!qa) {
@@ -110,7 +107,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const qaId = params.id;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(

@@ -54,12 +54,6 @@ export async function GET(request: NextRequest) {
             nickname: true,
           },
         },
-        post: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
       },
       orderBy: {
         bidAmount: 'desc',
@@ -93,7 +87,7 @@ export async function GET(request: NextRequest) {
     }[] = [];
 
     // 각 슬롯별로 당첨자 선정
-    for (const [slotId, bids] of bidsBySlot) {
+    for (const [slotId, bids] of Array.from(bidsBySlot)) {
       const slot = bids[0].slot;
 
       // 입찰가 높은 순으로 정렬 (이미 정렬됨)

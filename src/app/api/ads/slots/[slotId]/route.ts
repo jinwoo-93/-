@@ -68,7 +68,7 @@ export async function GET(
     const slotWithInfo = {
       ...slot,
       currentHighestBid: slot.bids.length > 0 ? slot.bids[0].bidAmount : null,
-      minimumBid: slot.minimumBid || 10000,
+      minimumBid: (slot as any).minimumBid || 10000,
       weekStart: weekStart.toISOString(),
       weekEnd: weekEnd.toISOString(),
     };

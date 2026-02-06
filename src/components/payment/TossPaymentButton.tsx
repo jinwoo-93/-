@@ -68,7 +68,8 @@ export function TossPaymentButton({ orderId, onError }: TossPaymentButtonProps) 
       const tossPayments = await loadTossPayments(clientKey);
 
       // 3. 결제창 호출
-      const paymentMethodMap: Record<PaymentMethod, string> = {
+      type TossPaymentMethod = '카드' | '계좌이체' | '가상계좌' | '휴대폰' | '토스페이';
+      const paymentMethodMap: Record<PaymentMethod, TossPaymentMethod> = {
         CARD: '카드',
         TRANSFER: '계좌이체',
         VIRTUAL_ACCOUNT: '가상계좌',
@@ -76,7 +77,7 @@ export function TossPaymentButton({ orderId, onError }: TossPaymentButtonProps) 
         EASY_PAY: '토스페이',
       };
 
-      await tossPayments.requestPayment(paymentMethodMap[selectedMethod], {
+      await tossPayments.requestPayment(paymentMethodMap[selectedMethod] as any, {
         amount,
         orderId: tossOrderId,
         orderName,

@@ -388,7 +388,7 @@ export default function PostDetailPage() {
           <CardContent>
             <ProductRecommendations
               type="similar"
-              productId={post.id}
+              postId={post.id}
               limit={4}
               showTitle={false}
             />

@@ -14,6 +14,7 @@ datasource db {
 model User {
   id                 String    @id @default(cuid())
   email              String?   @unique
+  password           String?   // 해시된 비밀번호
   phone              String?   @unique
   phoneCountry       String?   // KR, CN
   name               String?
@@ -22,6 +23,7 @@ model User {
   userType           UserType  @default(BUYER)
   country            Country   @default(KR)
   language           Language  @default(KO)
+  marketingAgreed    Boolean   @default(false)
 
   // NextAuth 필드
   emailVerified      DateTime?
@@ -226,6 +228,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ==================== SMS 인증 ====================
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone, code])
+  @@index([expiresAt])
 }
 
 enum UserType {

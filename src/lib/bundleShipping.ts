@@ -110,7 +110,7 @@ export function calculateBundleShipping(items: BundleItem[]): BundleCalculationR
   let totalDiscountedShippingKRW = 0;
   let totalDiscountedShippingCNY = 0;
 
-  for (const [sellerId, sellerItems] of sellerGroups) {
+  for (const [sellerId, sellerItems] of Array.from(sellerGroups)) {
     // 해당 판매자의 총 상품 수 (수량 포함)
     const totalItemCount = sellerItems.reduce((sum, item) => sum + item.quantity, 0);
 

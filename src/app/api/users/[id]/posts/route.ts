@@ -30,7 +30,7 @@ export async function GET(
     // 총 개수 (활성 상품만)
     const total = await prisma.post.count({
       where: {
-        sellerId: params.id,
+        userId: params.id,
         status: { in: ['ACTIVE', 'SOLD_OUT'] },
       },
     });
@@ -38,7 +38,7 @@ export async function GET(
     // 상품 목록
     const posts = await prisma.post.findMany({
       where: {
-        sellerId: params.id,
+        userId: params.id,
         status: { in: ['ACTIVE', 'SOLD_OUT'] },
       },
       orderBy: [

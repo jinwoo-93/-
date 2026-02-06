@@ -27,25 +27,18 @@ export async function GET(request: NextRequest) {
               },
             },
             bids: {
-              where: { status: 'PENDING' },
+              where: { status: 'PENDING' as any },
               orderBy: { bidAmount: 'desc' },
               take: 1,
             },
           },
         },
-        post: {
-          select: {
-            id: true,
-            title: true,
-            images: true,
-          },
-        },
       },
       orderBy: { createdAt: 'desc' },
-    });
+    }) as any;
 
     // 현재 최고 입찰가 추가
-    const bidsWithSlotInfo = bids.map((bid) => ({
+    const bidsWithSlotInfo = bids.map((bid: any) => ({
       id: bid.id,
       amount: bid.bidAmount,
       status: bid.status,

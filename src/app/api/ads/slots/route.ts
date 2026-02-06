@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
+import { SlotType } from '@prisma/client';
 
 // 광고 슬롯 목록 조회
 export async function GET(request: NextRequest) {
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
     const slots = await prisma.adSlot.findMany({
       where: {
         ...(categoryId && { categoryId }),
-        ...(slotType && { slotType }),
+        ...(slotType && { slotType: slotType as SlotType }),
       },
       include: {
         category: {
@@ -53,11 +54,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // 현재 최고 입찰가와 최소 입찰가 추가
+    // 현재 최고 입찰가와 기본 최소 입찰가 추가
     const slotsWithInfo = slots.map((slot) => ({
       ...slot,
       currentHighestBid: slot.bids.length > 0 ? slot.bids[0].bidAmount : null,
-      minimumBid: slot.minimumBid || 10000,
+      minimumBid: 10000, // 기본 최소 입찰가
       weekStart: weekStart.toISOString(),
       weekEnd: weekEnd.toISOString(),
     }));
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
 
-    if (!session?.user || session.user.type !== 'ADMIN') {
+    if (!session?.user || session.user.userType !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: '관리자 권한이 필요합니다.' } },
         { status: 403 }
@@ -85,14 +86,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, slotType, categoryId, minimumBid } = body;
+    const { slotType, categoryId, position } = body;
 
     const slot = await prisma.adSlot.create({
       data: {
-        name,
-        slotType,
-        categoryId: categoryId || null,
-        minimumBid: minimumBid || 10000,
+        slotType: slotType as SlotType,
+        categoryId,
+        position: position || 1,
       },
     });
 

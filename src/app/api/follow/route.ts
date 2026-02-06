@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 /**
@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -152,9 +152,6 @@ export async function GET(request: NextRequest) {
       const [follows, total] = await Promise.all([
         prisma.follow.findMany({
           where: { followingId: session.user.id },
-          include: {
-            // Prisma에서 relation이 없어서 별도 쿼리 필요
-          },
           orderBy: { createdAt: 'desc' },
           skip,
           take: limit,

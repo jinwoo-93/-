@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 /**
@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
 
     const products = await prisma.post.findMany({
       where: {
-        sellerId: session.user.id,
+        userId: session.user.id,
         status: { in: ['ACTIVE', 'SOLD_OUT'] },
       },
       orderBy: [
-        { soldCount: 'desc' },
+        { salesCount: 'desc' },
         { viewCount: 'desc' },
       ],
       take: limit,
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         images: true,
         priceKRW: true,
         priceCNY: true,
-        soldCount: true,
+        salesCount: true,
         viewCount: true,
         status: true,
       },

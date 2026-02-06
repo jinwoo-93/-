@@ -70,7 +70,12 @@ export async function POST(request: NextRequest) {
 
     // 사용한 토큰 삭제
     await prisma.verificationToken.delete({
-      where: { id: verificationToken.id },
+      where: {
+        identifier_token: {
+          identifier: verificationToken.identifier,
+          token: verificationToken.token,
+        },
+      },
     });
 
     return NextResponse.json({

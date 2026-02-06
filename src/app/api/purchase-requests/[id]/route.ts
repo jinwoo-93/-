@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 interface RouteContext {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
 
     // 제안자 정보
-    const sellerIds = [...new Set(purchaseRequest.offers.map((o) => o.sellerId))];
+    const sellerIds = Array.from(new Set(purchaseRequest.offers.map((o) => o.sellerId)));
     const sellers = await prisma.user.findMany({
       where: { id: { in: sellerIds } },
       select: {
@@ -87,7 +87,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const requestId = params.id;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(

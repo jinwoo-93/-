@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 /**
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 요청자 정보 조회
-    const requesterIds = [...new Set(requests.map((r) => r.requesterId))];
+    const requesterIds = Array.from(new Set(requests.map((r) => r.requesterId)));
     const users = await prisma.user.findMany({
       where: { id: { in: requesterIds } },
       select: {
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(

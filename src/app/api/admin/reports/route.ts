@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 // 관리자 권한 확인 헬퍼 (실제 구현에서는 더 정교하게)
@@ -19,7 +18,7 @@ async function isAdmin(userId: string): Promise<boolean> {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -99,7 +98,7 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -166,9 +165,7 @@ export async function PATCH(request: NextRequest) {
               userId: report.targetUserId,
               type: 'SYSTEM',
               title: '커뮤니티 가이드라인 위반 경고',
-              titleZh: '社区准则违规警告',
               message: '회원님의 활동이 커뮤니티 가이드라인에 위배되어 경고 조치되었습니다.',
-              messageZh: '您的行为违反了社区准则，已收到警告。',
             },
           });
         }

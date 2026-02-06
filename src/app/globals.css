@@ -4,65 +4,104 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* 직구역구 브랜드 컬러 시스템 (로고 기반) */
+    --background: 0 0% 98%;
+    --foreground: 224 76% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 224 76% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 224 76% 20%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: 딥 블루 (로고 메인 컬러) */
+    --primary: 224 76% 33%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: 오렌지 (로고 강조 컬러) */
+    --secondary: 25 95% 53%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 224 76% 95%;
+    --accent-foreground: 224 76% 33%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive: 에러/경고 */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Success: 성공/확인 */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning: 주의 - 브랜드 오렌지 사용 */
+    --warning: 25 95% 53%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 76% 33%;
 
     --radius: 0.5rem;
+
+    /* 쇼핑몰 특화 컬러 */
+    --price: 25 95% 53%;
+    --sale: 0 84% 50%;
+    --discount-badge: 25 95% 53%;
+    --rating: 45 100% 50%;
+
+    /* 브랜드 전용 */
+    --brand-blue: 224 76% 33%;
+    --brand-orange: 25 95% 53%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222 47% 13%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 13%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Primary: 밝은 블루 */
+    --primary: 224 76% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary: 밝은 오렌지 */
+    --secondary: 25 95% 58%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 223 47% 20%;
+    --muted-foreground: 218 11% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 224 76% 25%;
+    --accent-foreground: 224 76% 80%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --success: 142 76% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 25 95% 58%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 223 47% 20%;
+    --input: 223 47% 20%;
+    --ring: 224 76% 48%;
+
+    --price: 25 95% 58%;
+    --sale: 0 84% 60%;
+    --discount-badge: 25 95% 58%;
+    --rating: 45 100% 55%;
+
+    /* 브랜드 전용 */
+    --brand-blue: 224 76% 48%;
+    --brand-orange: 25 95% 58%;
   }
 }
 
@@ -71,26 +110,143 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  html {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
-/* 커스텀 스타일 */
+/* ==================== 컴포넌트 스타일 ==================== */
 @layer components {
+  /* 컨테이너 */
   .container-app {
-    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-7xl px-4;
   }
 
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+  /* 페이지 섹션 */
+  .section-header {
+    @apply flex items-center justify-between py-4;
+  }
+  .section-title {
+    @apply text-lg font-bold text-foreground;
+  }
+  .section-more {
+    @apply text-sm text-muted-foreground hover:text-primary flex items-center gap-1;
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+  /* 상품 가격 */
+  .price-original {
+    @apply text-sm text-muted-foreground line-through;
+  }
+  .price-current {
+    @apply text-lg font-bold text-[hsl(var(--price))];
+  }
+  .price-discount {
+    @apply inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-[hsl(var(--sale))] rounded;
   }
 
-  .card-hover {
-    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+  /* 평점 */
+  .rating-star {
+    @apply text-[hsl(var(--rating))];
+  }
+
+  /* 뱃지 */
+  .badge-free-shipping {
+    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-primary bg-primary/10 rounded;
+  }
+  .badge-rocket {
+    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-white bg-blue-500 rounded;
+  }
+  .badge-best {
+    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-white bg-orange-500 rounded;
+  }
+  .badge-new {
+    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-white bg-green-500 rounded;
+  }
+
+  /* 상품 카드 호버 */
+  .product-card {
+    @apply bg-card rounded-lg overflow-hidden transition-all duration-200;
+  }
+  .product-card:hover {
+    @apply shadow-lg;
+  }
+
+  /* 버튼 스타일 */
+  .btn-cta {
+    @apply w-full h-12 text-base font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors;
+  }
+  .btn-cart {
+    @apply w-full h-12 text-base font-semibold border-2 border-primary text-primary bg-white rounded-lg hover:bg-primary/5 transition-colors;
+  }
+
+  /* 탭 스타일 */
+  .tab-underline {
+    @apply relative pb-3 text-muted-foreground transition-colors;
+  }
+  .tab-underline.active {
+    @apply text-foreground font-semibold;
+  }
+  .tab-underline.active::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-primary;
+  }
+
+  /* 입력 필드 */
+  .search-input {
+    @apply w-full h-10 pl-10 pr-4 bg-secondary border-0 rounded-lg text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:outline-none;
+  }
+
+  /* 리스트 아이템 */
+  .list-item {
+    @apply flex items-center gap-4 p-4 bg-card rounded-lg;
+  }
+  .list-item-hover {
+    @apply hover:bg-muted/50 transition-colors cursor-pointer;
+  }
+
+  /* 분리선 */
+  .divider {
+    @apply h-2 bg-muted;
+  }
+
+  /* 스켈레톤 로딩 */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+
+  /* 플로팅 버튼 */
+  .floating-btn {
+    @apply fixed z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105;
+  }
+
+  /* 알림 뱃지 */
+  .notification-badge {
+    @apply absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-destructive rounded-full;
+  }
+
+  /* 카테고리 아이콘 */
+  .category-icon {
+    @apply flex flex-col items-center gap-2 p-3 rounded-xl transition-colors;
+  }
+  .category-icon:hover {
+    @apply bg-muted;
+  }
+  .category-icon-circle {
+    @apply w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl;
+  }
+
+  /* 배너 슬라이드 */
+  .banner-slide {
+    @apply relative w-full aspect-[2/1] md:aspect-[3/1] rounded-xl overflow-hidden;
+  }
+
+  /* 검색 히스토리 */
+  .search-history-item {
+    @apply flex items-center justify-between py-2 px-3 hover:bg-muted rounded-lg cursor-pointer;
   }
 
   /* 국가별 테마 */
@@ -105,21 +261,110 @@
   }
 }
 
-/* 스크롤바 스타일 */
+/* ==================== 유틸리티 ==================== */
+@layer utilities {
+  /* 텍스트 말줄임 */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  /* 스크롤 숨기기 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe area padding */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* 터치 영역 확대 */
+  .touch-target {
+    @apply relative;
+  }
+  .touch-target::before {
+    content: '';
+    @apply absolute -inset-2;
+  }
+}
+
+/* ==================== 스크롤바 ==================== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* 모바일에서는 스크롤바 숨기기 */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ==================== 애니메이션 ==================== */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
 }

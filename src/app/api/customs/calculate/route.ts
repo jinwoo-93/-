@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     // 환율 조회
     const exchangeRates = await prisma.exchangeRate.findMany({
       where: {
-        baseCurrency: 'KRW',
-        targetCurrency: { in: ['USD', 'CNY'] },
+        fromCurrency: 'KRW',
+        toCurrency: { in: ['USD', 'CNY'] },
       },
       orderBy: { updatedAt: 'desc' },
     });
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     };
 
     exchangeRates.forEach((rate) => {
-      rateMap[rate.targetCurrency] = rate.rate;
+      rateMap[rate.toCurrency] = rate.rate;
     });
 
     // CNY -> KRW 변환 (필요시)

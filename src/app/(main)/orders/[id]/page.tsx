@@ -321,7 +321,7 @@ export default function OrderDetailPage() {
         <ShippingTracker
           orderId={order.id}
           trackingNumber={order.trackingNumber}
-          carrier={order.shippingCompany?.code}
+          carrier={order.shippingCompany?.code ?? undefined}
           className="mb-6"
         />
       )}

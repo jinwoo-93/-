@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 /**
@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         priceCNY: true,
         images: true,
         status: true,
-        seller: {
+        user: {
           select: {
             id: true,
             nickname: true,
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     // 상품 존재 확인
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { id: true, sellerId: true },
+      select: { id: true, userId: true },
     });
 
     if (!post) {
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 자신의 상품은 찜 불가
-    if (post.sellerId === session.user.id) {
+    if (post.userId === session.user.id) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: '자신의 상품은 찜할 수 없습니다.' } },
         { status: 403 }
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },

@@ -80,7 +80,7 @@ export default function CheckoutPage() {
   }, 0);
 
   // 배송 방향 결정
-  const direction = items[0]?.post.direction || 'KR_TO_CN';
+  const direction = items[0]?.post.tradeDirection || 'KR_TO_CN';
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -159,6 +159,7 @@ export default function CheckoutPage() {
 
   // 묶음 배송용 아이템 변환
   const bundleItems = items.map((item) => ({
+    id: item.post.id,
     sellerId: item.post.user?.id || '',
     sellerName: item.post.user?.nickname || '',
     quantity: item.quantity,

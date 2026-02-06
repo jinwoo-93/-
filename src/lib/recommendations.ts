@@ -5,6 +5,7 @@
  */
 
 import { prisma } from './db';
+import { TradeDirection } from '@prisma/client';
 
 interface RecommendationInput {
   userId?: string;
@@ -97,12 +98,12 @@ export async function getPersonalizedRecommendations(
     }
 
     // 선호 카테고리/방향 정렬
-    const preferredCategories = [...categoryScores.entries()]
+    const preferredCategories = Array.from(categoryScores.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([id]) => id);
 
-    const preferredDirection = [...directionScores.entries()]
+    const preferredDirection = Array.from(directionScores.entries())
       .sort((a, b) => b[1] - a[1])[0]?.[0];
 
     // 추천 상품 조회
@@ -112,7 +113,7 @@ export async function getPersonalizedRecommendations(
         userId: { not: userId }, // 본인 상품 제외
         OR: [
           { categoryId: { in: preferredCategories } },
-          preferredDirection ? { tradeDirection: preferredDirection } : {},
+          preferredDirection ? { tradeDirection: preferredDirection as TradeDirection } : {},
         ],
       },
       include: {

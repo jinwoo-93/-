@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
-    const where = status ? { status } : {};
+    const where = status ? { status: status as any } : {};
 
     const disputes = await prisma.dispute.findMany({
       where,
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             orderNumber: true,
-            totalPrice: true,
+            totalKRW: true,
             buyer: {
               select: { nickname: true },
             },

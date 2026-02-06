@@ -90,11 +90,23 @@ export function useCurrency() {
     [exchangeRate]
   );
 
+  // 항상 KRW 형식으로 포맷
+  const formatKRW = useCallback((amount: number) => {
+    return formatPrice(amount, 'KRW');
+  }, []);
+
+  // 항상 CNY 형식으로 포맷
+  const formatCNY = useCallback((amount: number) => {
+    return formatPrice(amount, 'CNY');
+  }, []);
+
   return {
     currency,
     setCurrency,
     exchangeRate,
     format,
+    formatKRW,
+    formatCNY,
     convert,
     refreshRate: fetchExchangeRate,
   };

@@ -204,22 +204,21 @@ export function mapTossStatusToInternal(
 }
 
 /**
- * 결제 수단 매핑
+ * 결제 수단 매핑 (Prisma PaymentMethod enum에 맞춤)
  */
 export function mapTossMethodToInternal(
   method: string
-): 'CREDIT_CARD' | 'BANK_TRANSFER' | 'VIRTUAL_ACCOUNT' | 'MOBILE' | 'EASY_PAY' {
+): 'CREDIT_CARD' | 'NAVER_PAY' | 'KAKAO_PAY' | 'PAYPAL' {
   switch (method) {
     case '카드':
-      return 'CREDIT_CARD';
     case '계좌이체':
-      return 'BANK_TRANSFER';
     case '가상계좌':
-      return 'VIRTUAL_ACCOUNT';
     case '휴대폰':
-      return 'MOBILE';
+      return 'CREDIT_CARD';
     case '간편결제':
-      return 'EASY_PAY';
+      // 간편결제는 네이버페이, 카카오페이 등을 포함할 수 있음
+      // 기본값으로 CREDIT_CARD 반환
+      return 'CREDIT_CARD';
     default:
       return 'CREDIT_CARD';
   }

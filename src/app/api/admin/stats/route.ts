@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 /**
@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -101,42 +101,42 @@ export async function GET(request: NextRequest) {
       }),
       // 처리 대기 주문 (결제 완료 후 발송 대기)
       prisma.order.count({
-        where: { status: { in: ['PAID', 'PROCESSING'] } },
+        where: { status: { in: ['PAID', 'SHIPPING'] as any } },
       }),
       // 처리 대기 분쟁
       prisma.dispute.count({
-        where: { status: 'PENDING' },
+        where: { status: 'OPEN' as any },
       }),
       // 진행 중인 분쟁
       prisma.dispute.count({
-        where: { status: { in: ['PENDING', 'IN_REVIEW', 'VOTING'] } },
+        where: { status: { in: ['OPEN', 'VOTING'] as any } },
       }),
       // 오늘 완료된 주문 매출
       prisma.order.aggregate({
         where: {
-          status: 'COMPLETED',
-          completedAt: { gte: today, lt: tomorrow },
+          status: 'CONFIRMED' as any,
+          confirmedAt: { gte: today, lt: tomorrow },
         },
-        _sum: { totalAmount: true },
+        _sum: { totalKRW: true },
       }),
       // 지난달 완료된 주문 매출
       prisma.order.aggregate({
         where: {
-          status: 'COMPLETED',
-          completedAt: { gte: lastMonthStart, lte: lastMonthEnd },
+          status: 'CONFIRMED' as any,
+          confirmedAt: { gte: lastMonthStart, lte: lastMonthEnd },
         },
-        _sum: { totalAmount: true },
+        _sum: { totalKRW: true },
       }),
       // 최근 분쟁 목록
       prisma.dispute.findMany({
-        where: { status: { in: ['PENDING', 'IN_REVIEW'] } },
+        where: { status: { in: ['OPEN', 'VOTING'] as any } },
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: {
           order: {
             select: { orderNumber: true },
           },
-          user: {
+          initiator: {
             select: { nickname: true },
           },
         },
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
           id: true,
           orderNumber: true,
           status: true,
-          totalAmount: true,
+          totalKRW: true,
           createdAt: true,
           buyer: { select: { nickname: true } },
           seller: { select: { nickname: true } },
@@ -159,8 +159,8 @@ export async function GET(request: NextRequest) {
 
     // 수수료 계산 (3% 가정)
     const COMMISSION_RATE = 0.03;
-    const todayRevenue = Math.round((todayCompletedOrders._sum.totalAmount || 0) * COMMISSION_RATE);
-    const lastMonthRevenue = Math.round((lastMonthCompletedOrders._sum.totalAmount || 0) * COMMISSION_RATE);
+    const todayRevenue = Math.round((todayCompletedOrders._sum.totalKRW || 0) * COMMISSION_RATE);
+    const lastMonthRevenue = Math.round((lastMonthCompletedOrders._sum.totalKRW || 0) * COMMISSION_RATE);
 
     return NextResponse.json({
       success: true,
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
           recent: recentDisputes.map((d) => ({
             id: d.id,
             orderNumber: d.order.orderNumber,
-            reporter: d.user.nickname,
+            reporter: d.initiator.nickname,
             reason: d.reason,
             createdAt: d.createdAt,
           })),
@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
           id: o.id,
           orderNumber: o.orderNumber,
           status: o.status,
-          totalAmount: o.totalAmount,
+          totalAmount: o.totalKRW,
           buyer: o.buyer.nickname,
           seller: o.seller.nickname,
           createdAt: o.createdAt,

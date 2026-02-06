@@ -1,25 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Shield, Globe, Users, Truck, CreditCard, AlertTriangle, Ban, Receipt, Info, Radio, ShoppingCart, Sparkles } from 'lucide-react';
+import { ArrowRight, Shield, Globe, Users, Truck, CreditCard, AlertTriangle, Ban, Receipt, Info, Radio, ShoppingCart, Sparkles, Package, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
 import { HeroBanner } from '@/components/home/HeroBanner';
-import { ExchangeRateWidget } from '@/components/home/ExchangeRateWidget';
 import LiveStreamList from '@/components/live/LiveStreamList';
 import PurchaseRequestList from '@/components/purchase/PurchaseRequestList';
 import ProductRecommendations from '@/components/product/ProductRecommendations';
+import FloatingExchangeCalculator from '@/components/common/FloatingExchangeCalculator';
 
-const categories = [
-  { id: '1', nameKo: 'K-뷰티', nameZh: 'K-美妆', icon: '💄', slug: 'k-beauty', color: 'bg-pink-50 hover:bg-pink-100' },
-  { id: '2', nameKo: 'K-패션', nameZh: 'K-时尚', icon: '👗', slug: 'k-fashion', color: 'bg-purple-50 hover:bg-purple-100' },
-  { id: '3', nameKo: 'K-푸드', nameZh: 'K-食品', icon: '🍜', slug: 'k-food', color: 'bg-orange-50 hover:bg-orange-100' },
-  { id: '4', nameKo: '전자제품', nameZh: '电子产品', icon: '📱', slug: 'electronics', color: 'bg-blue-50 hover:bg-blue-100' },
-  { id: '5', nameKo: '생활용품', nameZh: '生活用品', icon: '🏠', slug: 'home', color: 'bg-green-50 hover:bg-green-100' },
-  { id: '6', nameKo: '유아용품', nameZh: '母婴用品', icon: '👶', slug: 'baby', color: 'bg-yellow-50 hover:bg-yellow-100' },
-  { id: '7', nameKo: '건강식품', nameZh: '保健食品', icon: '💊', slug: 'health', color: 'bg-red-50 hover:bg-red-100' },
-  { id: '8', nameKo: '스포츠', nameZh: '运动', icon: '⚽', slug: 'sports', color: 'bg-teal-50 hover:bg-teal-100' },
+// 한국어 사용자가 볼 카테고리 (중국 상품 구매용)
+const categoriesForKorean = [
+  { id: '1', name: '패션', icon: '👗', slug: 'fashion', color: 'bg-purple-50 hover:bg-purple-100', direction: 'CN_TO_KR' },
+  { id: '2', name: '전자기기', icon: '📱', slug: 'electronics', color: 'bg-blue-50 hover:bg-blue-100', direction: 'CN_TO_KR' },
+  { id: '3', name: '뷰티', icon: '💄', slug: 'beauty', color: 'bg-pink-50 hover:bg-pink-100', direction: 'CN_TO_KR' },
+  { id: '4', name: '식품', icon: '🍜', slug: 'food', color: 'bg-orange-50 hover:bg-orange-100', direction: 'CN_TO_KR' },
+  { id: '5', name: '생활/가전', icon: '🏠', slug: 'home', color: 'bg-green-50 hover:bg-green-100', direction: 'CN_TO_KR' },
+  { id: '6', name: '유아용품', icon: '👶', slug: 'baby', color: 'bg-yellow-50 hover:bg-yellow-100', direction: 'CN_TO_KR' },
+  { id: '7', name: '건강식품', icon: '💊', slug: 'health', color: 'bg-red-50 hover:bg-red-100', direction: 'CN_TO_KR' },
+  { id: '8', name: '스포츠', icon: '⚽', slug: 'sports', color: 'bg-teal-50 hover:bg-teal-100', direction: 'CN_TO_KR' },
+];
+
+// 중국어 사용자가 볼 카테고리 (한국 상품 구매용)
+const categoriesForChinese = [
+  { id: '1', name: 'K-Beauty', icon: '💄', slug: 'beauty', color: 'bg-pink-50 hover:bg-pink-100', direction: 'KR_TO_CN' },
+  { id: '2', name: 'K-Fashion', icon: '👗', slug: 'fashion', color: 'bg-purple-50 hover:bg-purple-100', direction: 'KR_TO_CN' },
+  { id: '3', name: 'K-Food', icon: '🍜', slug: 'food', color: 'bg-orange-50 hover:bg-orange-100', direction: 'KR_TO_CN' },
+  { id: '4', name: 'K-Pop', icon: '🎵', slug: 'kpop', color: 'bg-indigo-50 hover:bg-indigo-100', direction: 'KR_TO_CN' },
+  { id: '5', name: '电子产品', icon: '📱', slug: 'electronics', color: 'bg-blue-50 hover:bg-blue-100', direction: 'KR_TO_CN' },
+  { id: '6', name: '生活用品', icon: '🏠', slug: 'home', color: 'bg-green-50 hover:bg-green-100', direction: 'KR_TO_CN' },
+  { id: '7', name: '保健食品', icon: '💊', slug: 'health', color: 'bg-red-50 hover:bg-red-100', direction: 'KR_TO_CN' },
+  { id: '8', name: '母婴用品', icon: '👶', slug: 'baby', color: 'bg-yellow-50 hover:bg-yellow-100', direction: 'KR_TO_CN' },
 ];
 
 const features = [
@@ -60,18 +73,56 @@ const features = [
 export default function HomePage() {
   const { language } = useLanguage();
 
+  // 언어에 따른 카테고리 선택
+  const categories = language === 'ko' ? categoriesForKorean : categoriesForChinese;
+
+  // 언어에 따른 거래 방향
+  const defaultDirection = language === 'ko' ? 'CN_TO_KR' : 'KR_TO_CN';
+
   return (
     <div className="min-h-screen bg-white">
       {/* 히어로 배너 캐러셀 */}
       <HeroBanner />
 
-      {/* 실시간 환율 위젯 */}
-      <div className="container-app py-4">
-        <ExchangeRateWidget />
+      {/* 판매하기/구매하기 버튼 */}
+      <div className="container-app py-6">
+        <div className="grid grid-cols-2 gap-4">
+          <Link href="/posts/create">
+            <Card className="h-full overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-2 border-primary/20 hover:border-primary/50">
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Package className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-primary mb-1">
+                  {language === 'ko' ? '판매하기' : '我要卖'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'ko' ? '상품을 등록하고 판매하세요' : '上架商品开始销售'}
+                </p>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href={`/posts?direction=${defaultDirection}`}>
+            <Card className="h-full overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-2 border-blue-500/20 hover:border-blue-500/50">
+              <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-6 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <ShoppingBag className="w-7 h-7 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-blue-600 mb-1">
+                  {language === 'ko' ? '구매하기' : '我要买'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'ko' ? '상품을 검색하고 구매하세요' : '浏览商品立即购买'}
+                </p>
+              </div>
+            </Card>
+          </Link>
+        </div>
       </div>
 
       {/* 특징 바 */}
-      <div className="border-b">
+      <div className="border-y bg-gray-50/50">
         <div className="container-app py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {features.map((feature, index) => (
@@ -109,71 +160,16 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
             {categories.map((category) => (
-              <Link key={category.id} href={`/posts?category=${category.slug}`}>
+              <Link key={category.id} href={`/posts?category=${category.slug}&direction=${category.direction}`}>
                 <div className={`flex flex-col items-center p-4 rounded-xl transition-all cursor-pointer ${category.color}`}>
                   <span className="text-3xl mb-2">{category.icon}</span>
                   <span className="text-xs font-medium text-gray-700 text-center">
-                    {language === 'ko' ? category.nameKo : category.nameZh}
+                    {category.name}
                   </span>
                 </div>
               </Link>
             ))}
           </div>
-        </section>
-
-        {/* 퀵 링크 카드 */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 한국 → 중국 */}
-          <Link href="/posts?direction=KR_TO_CN">
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-6 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-80 mb-1">
-                      {language === 'ko' ? '역직구' : '代购'}
-                    </p>
-                    <h3 className="text-2xl font-bold mb-2">
-                      {language === 'ko' ? '한국 → 중국' : '韩国 → 中国'}
-                    </h3>
-                    <p className="text-sm opacity-90">
-                      {language === 'ko'
-                        ? 'K-뷰티, K-패션 등 한국 인기 상품'
-                        : 'K-Beauty, K-Fashion等韩国热门商品'}
-                    </p>
-                  </div>
-                  <div className="text-6xl opacity-30 group-hover:scale-110 transition-transform">
-                    🇰🇷
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Link>
-
-          {/* 중국 → 한국 */}
-          <Link href="/posts?direction=CN_TO_KR">
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-              <div className="bg-gradient-to-r from-red-600 to-red-400 p-6 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm opacity-80 mb-1">
-                      {language === 'ko' ? '직구' : '直购'}
-                    </p>
-                    <h3 className="text-2xl font-bold mb-2">
-                      {language === 'ko' ? '중국 → 한국' : '中国 → 韩国'}
-                    </h3>
-                    <p className="text-sm opacity-90">
-                      {language === 'ko'
-                        ? '전자제품, 생활용품 등 합리적인 가격'
-                        : '电子产品、生活用品等实惠价格'}
-                    </p>
-                  </div>
-                  <div className="text-6xl opacity-30 group-hover:scale-110 transition-transform">
-                    🇨🇳
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Link>
         </section>
 
         {/* 라이브 커머스 섹션 */}
@@ -200,6 +196,12 @@ export default function HomePage() {
               <Sparkles className="h-5 w-5 text-purple-500" />
               {language === 'ko' ? '맞춤 추천' : '个性化推荐'}
             </h2>
+            <Link href={`/posts?direction=${defaultDirection}`}>
+              <Button variant="ghost" size="sm" className="text-gray-600">
+                {language === 'ko' ? '전체보기' : '查看全部'}
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
           <ProductRecommendations limit={8} showTitle={false} />
         </section>
@@ -288,7 +290,7 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/posts">
+            <Link href={`/posts?direction=${defaultDirection}`}>
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
                 {language === 'ko' ? '상품 둘러보기' : '浏览商品'}
               </Button>
@@ -441,6 +443,9 @@ export default function HomePage() {
           </div>
         </section>
       </div>
+
+      {/* 플로팅 환율 계산기 버튼 */}
+      <FloatingExchangeCalculator />
     </div>
   );
 }

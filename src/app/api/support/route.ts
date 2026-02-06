@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -19,7 +19,7 @@ const createTicketSchema = z.object({
 // 문의 목록 조회 (GET)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const { searchParams } = new URL(request.url);
 
     // 내 문의 목록 조회 (로그인 사용자)
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 // 문의 생성 (POST)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const body = await request.json();
 
     const validatedData = createTicketSchema.parse(body);

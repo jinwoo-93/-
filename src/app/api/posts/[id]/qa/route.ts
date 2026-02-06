@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 
 interface RouteContext {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const postId = params.id;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     ]);
 
     // 사용자 정보 조회
-    const userIds = [...new Set([...qas.map((q) => q.userId), ...qas.map((q) => q.answeredBy).filter(Boolean)])];
+    const userIds = Array.from(new Set([...qas.map((q) => q.userId), ...qas.map((q) => q.answeredBy).filter(Boolean)]));
     const users = await prisma.user.findMany({
       where: { id: { in: userIds as string[] } },
       select: {
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const params = await context.params;
     const postId = params.id;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(

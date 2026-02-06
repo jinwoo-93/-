@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
+
 import { prisma } from '@/lib/db';
 import { randomBytes } from 'crypto';
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 호스트 정보 조회
-    const hostIds = [...new Set(streams.map((s) => s.hostId))];
+    const hostIds = Array.from(new Set(streams.map((s) => s.hostId)));
     const hosts = await prisma.user.findMany({
       where: { id: { in: hostIds } },
       select: {
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json(

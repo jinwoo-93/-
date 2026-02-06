@@ -31,7 +31,7 @@ interface RecommendedProduct {
   reasonZh: string;
 }
 
-interface ProductRecommendationsProps {
+export interface ProductRecommendationsProps {
   type?: 'personalized' | 'similar' | 'popular';
   postId?: string;
   categoryId?: string;
@@ -39,6 +39,7 @@ interface ProductRecommendationsProps {
   limit?: number;
   title?: string;
   titleZh?: string;
+  showTitle?: boolean;
   className?: string;
 }
 
@@ -50,6 +51,7 @@ export default function ProductRecommendations({
   limit = 6,
   title,
   titleZh,
+  showTitle = true,
   className,
 }: ProductRecommendationsProps) {
   const { language } = useLanguage();

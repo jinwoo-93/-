@@ -5,8 +5,10 @@ import Kakao from 'next-auth/providers/kakao';
 import Credentials from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/db';
 import type { Adapter } from 'next-auth/adapters';
+import type { JWT } from 'next-auth/jwt';
+import type { Session, User, Account } from 'next-auth';
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const authConfig = {
   adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
     Google({
@@ -62,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
   },
   pages: {
     signIn: '/login',
@@ -70,7 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }: { token: JWT; user?: User; account?: Account | null }) {
       if (user) {
         token.id = user.id;
       }
@@ -79,7 +81,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
         session.user.id = token.id as string;
 
@@ -111,14 +113,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
   },
   events: {
-    async createUser({ user }) {
+    async createUser({ user }: { user: User }) {
       // 새 사용자 생성 시 기본값 설정
       await prisma.user.update({
         where: { id: user.id },
@@ -130,7 +132,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       });
     },
   },
-});
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
+
+// 레거시 API 호환성을 위한 exports
+export const authOptions = authConfig;
+export const getServerSession = auth;
 
 // NextAuth 타입 확장
 declare module 'next-auth' {
