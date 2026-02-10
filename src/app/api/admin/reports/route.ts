@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // 관리자 권한 확인 헬퍼 (실제 구현에서는 더 정교하게)
 async function isAdmin(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({

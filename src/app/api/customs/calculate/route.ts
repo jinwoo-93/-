@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { calculateCustomsDuty, getAllCustomsRates } from '@/lib/customs';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 관부가세 계산
  * POST /api/customs/calculate

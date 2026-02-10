@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 위시리스트 목록 조회
  * GET /api/wishlist?page=1&limit=20

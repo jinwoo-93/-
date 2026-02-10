@@ -5,6 +5,8 @@ import { postCreateSchema, postFilterSchema } from '@/lib/validations';
 import { translatePost } from '@/lib/translation';
 import { Prisma } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // 게시글 목록 조회
 export async function GET(request: NextRequest) {
   try {

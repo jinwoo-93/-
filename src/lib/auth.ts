@@ -1,24 +1,20 @@
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import Google from 'next-auth/providers/google';
-import Kakao from 'next-auth/providers/kakao';
 import Credentials from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/db';
 import type { Adapter } from 'next-auth/adapters';
+import type { Session } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
-import type { Session, User, Account } from 'next-auth';
+import { authConfig } from './auth.config';
 
-const authConfig = {
+// Node.js Runtime 전용 설정 (API 라우트에서 사용)
+// PrismaAdapter, DB 접근 등 포함
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    Kakao({
-      clientId: process.env.KAKAO_CLIENT_ID!,
-      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
-    }),
+    // authConfig의 providers를 그대로 사용하되, Credentials만 실제 로직으로 교체
+    ...authConfig.providers.filter((p: any) => p.id !== 'credentials'),
     Credentials({
       name: 'Phone',
       credentials: {
@@ -30,8 +26,6 @@ const authConfig = {
           return null;
         }
 
-        // TODO: 실제 SMS 인증 로직 구현
-        // 현재는 개발용으로 간단히 처리
         const user = await prisma.user.findUnique({
           where: { phone: credentials.phone as string },
         });
@@ -45,7 +39,6 @@ const authConfig = {
           };
         }
 
-        // 새 사용자 생성
         const newUser = await prisma.user.create({
           data: {
             phone: credentials.phone as string,
@@ -63,65 +56,46 @@ const authConfig = {
       },
     }),
   ],
-  session: {
-    strategy: 'jwt' as const,
-  },
-  pages: {
-    signIn: '/login',
-    newUser: '/register/complete',
-    error: '/login',
-  },
   callbacks: {
-    async jwt({ token, user, account }: { token: JWT; user?: User; account?: Account | null }) {
-      if (user) {
-        token.id = user.id;
-      }
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      return token;
-    },
+    ...authConfig.callbacks,
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
         session.user.id = token.id as string;
 
-        // 사용자 정보 가져오기
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: {
-            userType: true,
-            country: true,
-            language: true,
-            isPhoneVerified: true,
-            isIdentityVerified: true,
-            isBusinessVerified: true,
-            hasExcellentBadge: true,
-            nickname: true,
-          },
-        });
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              userType: true,
+              country: true,
+              language: true,
+              isPhoneVerified: true,
+              isIdentityVerified: true,
+              isBusinessVerified: true,
+              hasExcellentBadge: true,
+              nickname: true,
+            },
+          });
 
-        if (dbUser) {
-          session.user.userType = dbUser.userType;
-          session.user.country = dbUser.country;
-          session.user.language = dbUser.language;
-          session.user.isPhoneVerified = dbUser.isPhoneVerified;
-          session.user.isIdentityVerified = dbUser.isIdentityVerified;
-          session.user.isBusinessVerified = dbUser.isBusinessVerified;
-          session.user.hasExcellentBadge = dbUser.hasExcellentBadge;
-          session.user.nickname = dbUser.nickname;
+          if (dbUser) {
+            session.user.userType = dbUser.userType;
+            session.user.country = dbUser.country;
+            session.user.language = dbUser.language;
+            session.user.isPhoneVerified = dbUser.isPhoneVerified;
+            session.user.isIdentityVerified = dbUser.isIdentityVerified;
+            session.user.isBusinessVerified = dbUser.isBusinessVerified;
+            session.user.hasExcellentBadge = dbUser.hasExcellentBadge;
+            session.user.nickname = dbUser.nickname;
+          }
+        } catch (error) {
+          console.error('Session callback DB error:', error);
         }
       }
       return session;
     },
-    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
-      if (new URL(url).origin === baseUrl) return url;
-      return baseUrl;
-    },
   },
   events: {
-    async createUser({ user }: { user: User }) {
-      // 새 사용자 생성 시 기본값 설정
+    async createUser({ user }) {
       await prisma.user.update({
         where: { id: user.id },
         data: {
@@ -132,9 +106,7 @@ const authConfig = {
       });
     },
   },
-};
-
-export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
+});
 
 // 레거시 API 호환성을 위한 exports
 export const authOptions = authConfig;

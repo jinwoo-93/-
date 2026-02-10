@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Shield, Globe, Users, Truck, CreditCard, AlertTriangle, Ban, Receipt, Info, Radio, ShoppingCart, Sparkles, Package, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Shield, Globe, Users, Truck, CreditCard, AlertTriangle, Ban, Receipt, Info, Radio, ShoppingCart, Sparkles, Package, ShoppingBag, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -10,6 +10,7 @@ import LiveStreamList from '@/components/live/LiveStreamList';
 import PurchaseRequestList from '@/components/purchase/PurchaseRequestList';
 import ProductRecommendations from '@/components/product/ProductRecommendations';
 import FloatingExchangeCalculator from '@/components/common/FloatingExchangeCalculator';
+import { EscrowBadge } from '@/components/ui/EscrowBadge';
 
 // 한국어 사용자가 볼 카테고리 (중국 상품 구매용)
 const categoriesForKorean = [
@@ -37,12 +38,13 @@ const categoriesForChinese = [
 
 const features = [
   {
-    icon: Shield,
+    icon: ShieldCheck,
     titleKo: '에스크로 결제',
     titleZh: '托管支付',
     descKo: '구매 확정 전까지 안전 보관',
     descZh: '确认收货前安全保管',
-    color: 'text-blue-600 bg-blue-50',
+    color: 'text-escrow-600 bg-escrow-50',
+    highlight: true,
   },
   {
     icon: Truck,
@@ -50,7 +52,8 @@ const features = [
     titleZh: '国际配送',
     descKo: '항공/해상 배송 지원',
     descZh: '支持空运/海运',
-    color: 'text-green-600 bg-green-50',
+    color: 'text-korea-600 bg-korea-50',
+    highlight: false,
   },
   {
     icon: Users,
@@ -59,6 +62,7 @@ const features = [
     descKo: '공정한 배심원 투표',
     descZh: '公平的陪审团投票',
     color: 'text-purple-600 bg-purple-50',
+    highlight: false,
   },
   {
     icon: CreditCard,
@@ -66,7 +70,8 @@ const features = [
     titleZh: '低手续费',
     descKo: '일반 5% / 사업자 3%',
     descZh: '普通5% / 企业3%',
-    color: 'text-orange-600 bg-orange-50',
+    color: 'text-brand-orange bg-orange-50',
+    highlight: false,
   },
 ];
 
@@ -87,34 +92,40 @@ export default function HomePage() {
       {/* 판매하기/구매하기 버튼 */}
       <div className="container-app py-6">
         <div className="grid grid-cols-2 gap-4">
-          <Link href="/posts/create">
-            <Card className="h-full overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-2 border-primary/20 hover:border-primary/50">
-              <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 flex flex-col items-center justify-center text-center">
-                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <Package className="w-7 h-7 text-primary" />
+          <Link href="/posts/create" className="group">
+            <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-korea-100 hover:border-korea-300 hover:scale-[1.02]">
+              <div className="bg-gradient-to-br from-korea-50 to-white p-6 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-2xl bg-korea-100 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-korea-200 transition-all">
+                  <Package className="w-7 h-7 text-korea-600" />
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-1">
+                <h3 className="text-xl font-bold text-korea-700 mb-1">
                   {language === 'ko' ? '판매하기' : '我要卖'}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500">
                   {language === 'ko' ? '상품을 등록하고 판매하세요' : '上架商品开始销售'}
                 </p>
+                <span className="mt-2 text-xs text-korea-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                  🇰🇷 → 🇨🇳
+                </span>
               </div>
             </Card>
           </Link>
 
-          <Link href={`/posts?direction=${defaultDirection}`}>
-            <Card className="h-full overflow-hidden hover:shadow-lg transition-all cursor-pointer group border-2 border-blue-500/20 hover:border-blue-500/50">
-              <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-6 flex flex-col items-center justify-center text-center">
-                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="w-7 h-7 text-blue-600" />
+          <Link href={`/posts?direction=${defaultDirection}`} className="group">
+            <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-china-100 hover:border-china-300 hover:scale-[1.02]">
+              <div className="bg-gradient-to-br from-china-50 to-white p-6 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-2xl bg-china-100 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-china-200 transition-all">
+                  <ShoppingBag className="w-7 h-7 text-china-600" />
                 </div>
-                <h3 className="text-xl font-bold text-blue-600 mb-1">
+                <h3 className="text-xl font-bold text-china-700 mb-1">
                   {language === 'ko' ? '구매하기' : '我要买'}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-500">
                   {language === 'ko' ? '상품을 검색하고 구매하세요' : '浏览商品立即购买'}
                 </p>
+                <span className="mt-2 text-xs text-china-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                  🇨🇳 → 🇰🇷
+                </span>
               </div>
             </Card>
           </Link>
@@ -122,16 +133,21 @@ export default function HomePage() {
       </div>
 
       {/* 특징 바 */}
-      <div className="border-y bg-gray-50/50">
+      <div className="border-y bg-gradient-to-r from-gray-50 to-white">
         <div className="container-app py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${feature.color}`}>
+              <div
+                key={index}
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
+                  feature.highlight ? 'bg-escrow-50/50 border border-escrow-200' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className={`p-2.5 rounded-xl ${feature.color}`}>
                   <feature.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">
+                  <p className={`font-semibold text-sm ${feature.highlight ? 'text-escrow-700' : 'text-gray-900'}`}>
                     {language === 'ko' ? feature.titleKo : feature.titleZh}
                   </p>
                   <p className="text-xs text-gray-500">
@@ -152,7 +168,7 @@ export default function HomePage() {
               {language === 'ko' ? '카테고리' : '分类'}
             </h2>
             <Link href="/categories">
-              <Button variant="ghost" size="sm" className="text-gray-600">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                 {language === 'ko' ? '전체보기' : '查看全部'}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
@@ -161,7 +177,7 @@ export default function HomePage() {
           <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
             {categories.map((category) => (
               <Link key={category.id} href={`/posts?category=${category.slug}&direction=${category.direction}`}>
-                <div className={`flex flex-col items-center p-4 rounded-xl transition-all cursor-pointer ${category.color}`}>
+                <div className={`flex flex-col items-center p-4 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-md ${category.color}`}>
                   <span className="text-3xl mb-2">{category.icon}</span>
                   <span className="text-xs font-medium text-gray-700 text-center">
                     {category.name}
@@ -176,11 +192,14 @@ export default function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Radio className="h-5 w-5 text-red-500" />
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 rounded-lg">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <Radio className="h-4 w-4 text-red-500" />
+              </div>
               {language === 'ko' ? '라이브 방송' : '直播'}
             </h2>
             <Link href="/live">
-              <Button variant="ghost" size="sm" className="text-gray-600">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                 {language === 'ko' ? '전체보기' : '查看全部'}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
@@ -193,11 +212,13 @@ export default function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-500" />
+              <div className="p-1.5 bg-purple-50 rounded-lg">
+                <Sparkles className="h-4 w-4 text-purple-500" />
+              </div>
               {language === 'ko' ? '맞춤 추천' : '个性化推荐'}
             </h2>
             <Link href={`/posts?direction=${defaultDirection}`}>
-              <Button variant="ghost" size="sm" className="text-gray-600">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                 {language === 'ko' ? '전체보기' : '查看全部'}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
@@ -210,11 +231,13 @@ export default function HomePage() {
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-green-600" />
+              <div className="p-1.5 bg-green-50 rounded-lg">
+                <ShoppingCart className="h-4 w-4 text-green-600" />
+              </div>
               {language === 'ko' ? '구매대행 요청' : '代购请求'}
             </h2>
             <Link href="/purchase-requests">
-              <Button variant="ghost" size="sm" className="text-gray-600">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                 {language === 'ko' ? '전체보기' : '查看全部'}
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
@@ -224,16 +247,19 @@ export default function HomePage() {
         </section>
 
         {/* 서비스 안내 */}
-        <section className="border rounded-2xl p-6 md:p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 text-center">
-            {language === 'ko' ? '직구역구가 특별한 이유' : '直购易购的独特之处'}
-          </h2>
+        <section className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-6 md:p-8">
+          <div className="text-center mb-6">
+            <EscrowBadge variant="filled" size="md" className="mb-3" />
+            <h2 className="text-xl font-bold text-gray-900">
+              {language === 'ko' ? '직구역구가 특별한 이유' : '直购易购的独特之处'}
+            </h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <Shield className="w-8 h-8 text-blue-600" />
+            <div className="text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+              <div className="w-16 h-16 mx-auto mb-4 bg-escrow-100 rounded-2xl flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-escrow-600" />
               </div>
-              <h3 className="font-semibold mb-2">
+              <h3 className="font-semibold mb-2 text-gray-900">
                 {language === 'ko' ? '안전한 거래' : '安全交易'}
               </h3>
               <p className="text-sm text-gray-600">
@@ -242,11 +268,11 @@ export default function HomePage() {
                   : '通过托管系统，在确认收货前货款将被安全保管'}
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <Globe className="w-8 h-8 text-green-600" />
+            <div className="text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-korea-100 to-china-100 rounded-2xl flex items-center justify-center">
+                <Globe className="w-8 h-8 text-korea-600" />
               </div>
-              <h3 className="font-semibold mb-2">
+              <h3 className="font-semibold mb-2 text-gray-900">
                 {language === 'ko' ? '양방향 거래' : '双向交易'}
               </h3>
               <p className="text-sm text-gray-600">
@@ -255,11 +281,11 @@ export default function HomePage() {
                   : '可以在韩国和中国双向销售和购买商品'}
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+            <div className="text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
+              <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-2xl flex items-center justify-center">
                 <Users className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="font-semibold mb-2">
+              <h3 className="font-semibold mb-2 text-gray-900">
                 {language === 'ko' ? '공정한 분쟁해결' : '公平仲裁'}
               </h3>
               <p className="text-sm text-gray-600">
@@ -272,29 +298,40 @@ export default function HomePage() {
         </section>
 
         {/* CTA 섹션 */}
-        <section className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            {language === 'ko'
-              ? '지금 바로 시작하세요'
-              : '立即开始'}
-          </h2>
-          <p className="text-gray-300 mb-6 max-w-xl mx-auto">
-            {language === 'ko'
-              ? '간단한 가입으로 한국과 중국의 수백만 고객에게 상품을 판매하세요'
-              : '简单注册，向韩国和中国数百万客户销售商品'}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/posts/create">
-              <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
-                {language === 'ko' ? '판매 시작하기' : '开始销售'}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href={`/posts?direction=${defaultDirection}`}>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                {language === 'ko' ? '상품 둘러보기' : '浏览商品'}
-              </Button>
-            </Link>
+        <section className="bg-gradient-to-r from-korea-50 via-white to-china-50 border border-gray-200 rounded-2xl p-8 md:p-12 text-center relative overflow-hidden">
+          {/* 배경 장식 */}
+          <div className="absolute top-0 left-0 w-32 h-32 bg-korea-200/30 rounded-full -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-32 h-32 bg-china-200/30 rounded-full translate-x-1/2 translate-y-1/2" />
+
+          <div className="relative z-10">
+            <div className="flex justify-center mb-4">
+              <span className="text-3xl">🇰🇷</span>
+              <span className="mx-2 text-2xl text-gray-400">⟷</span>
+              <span className="text-3xl">🇨🇳</span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-korea-700 to-china-700 bg-clip-text text-transparent">
+              {language === 'ko'
+                ? '지금 바로 시작하세요'
+                : '立即开始'}
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-xl mx-auto">
+              {language === 'ko'
+                ? '간단한 가입으로 한국과 중국의 수백만 고객에게 상품을 판매하세요'
+                : '简单注册，向韩国和中国数百万客户销售商品'}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/posts/create">
+                <Button size="lg" className="bg-gradient-to-r from-korea-600 to-korea-700 text-white hover:from-korea-700 hover:to-korea-800 hover:scale-105 transition-all shadow-lg shadow-korea-500/20">
+                  {language === 'ko' ? '판매 시작하기' : '开始销售'}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href={`/posts?direction=${defaultDirection}`}>
+                <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-900 hover:bg-white hover:border-gray-400 hover:scale-105 transition-all">
+                  {language === 'ko' ? '상품 둘러보기' : '浏览商品'}
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -310,8 +347,8 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* 한국 → 중국 세관 안내 */}
-            <div className="border rounded-xl overflow-hidden">
-              <div className="bg-blue-600 text-white p-4 flex items-center gap-2">
+            <div className="border border-korea-200 rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-korea-600 to-korea-700 text-white p-4 flex items-center gap-2">
                 <span className="text-xl">🇰🇷</span>
                 <span className="font-semibold">→</span>
                 <span className="text-xl">🇨🇳</span>
@@ -357,8 +394,8 @@ export default function HomePage() {
             </div>
 
             {/* 중국 → 한국 세관 안내 */}
-            <div className="border rounded-xl overflow-hidden">
-              <div className="bg-red-600 text-white p-4 flex items-center gap-2">
+            <div className="border border-china-200 rounded-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-china-600 to-china-700 text-white p-4 flex items-center gap-2">
                 <span className="text-xl">🇨🇳</span>
                 <span className="font-semibold">→</span>
                 <span className="text-xl">🇰🇷</span>

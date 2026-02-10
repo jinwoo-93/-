@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 // 문의 생성 스키마
 const createTicketSchema = z.object({
   email: z.string().email(),

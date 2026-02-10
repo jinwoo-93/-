@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 위시리스트 상태 확인
  * GET /api/wishlist/check?postId=xxx

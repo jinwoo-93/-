@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // 관리자용 문의 목록 조회 (GET)
 export async function GET(request: NextRequest) {
   try {

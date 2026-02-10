@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { markMessagesAsRead } from '@/lib/chat';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 채팅방 메시지 읽음 처리
  */

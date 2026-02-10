@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { getUserChatRooms, getOrCreateChatRoom } from '@/lib/chat';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const createRoomSchema = z.object({
   partnerId: z.string().min(1, '상대방 ID가 필요합니다.'),
   orderId: z.string().optional(),

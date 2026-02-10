@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { getChatMessages, sendMessage, markMessagesAsRead } from '@/lib/chat';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const sendMessageSchema = z.object({
   content: z.string().min(1, '메시지 내용이 필요합니다.').max(2000, '메시지는 2000자 이내로 작성해주세요.'),
   images: z.array(z.string().url()).max(5, '이미지는 최대 5개까지 첨부할 수 있습니다.').optional(),

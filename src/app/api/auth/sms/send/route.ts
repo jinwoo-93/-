@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendVerificationSMS, normalizePhoneNumber, detectCountry } from '@/lib/sms';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const requestSchema = z.object({
   phone: z.string().min(10, '전화번호가 너무 짧습니다.'),
   country: z.enum(['KR', 'CN']).optional(),

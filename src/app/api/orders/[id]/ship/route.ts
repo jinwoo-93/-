@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { orderShipSchema } from '@/lib/validations';
 
+export const dynamic = 'force-dynamic';
+
 // 발송 처리
 export async function PATCH(
   request: NextRequest,

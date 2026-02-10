@@ -6,6 +6,8 @@ import { generateOrderNumber, calculatePlatformFee } from '@/lib/utils';
 import { FEE_RATES } from '@/lib/constants';
 import { OrderStatus } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // 주문 목록 조회
 export async function GET(request: NextRequest) {
   try {

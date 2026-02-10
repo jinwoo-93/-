@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { checkNewMessages, getUnreadCount } from '@/lib/chat';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 새 메시지 확인 API (Long Polling)
  * 클라이언트는 이 엔드포인트를 주기적으로 호출하여 새 메시지를 확인합니다.

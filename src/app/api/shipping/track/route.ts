@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { trackShipment, SHIPPING_CARRIERS, CarrierCode } from '@/lib/shipping';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 배송 추적 조회
  * GET /api/shipping/track?trackingNumber=xxx&carrier=CJ

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 통합 검색 API
  * - 상품 검색 (제목, 설명)

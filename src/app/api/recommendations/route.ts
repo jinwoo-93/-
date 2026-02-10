@@ -7,6 +7,8 @@ import {
   getPopularProducts,
 } from '@/lib/recommendations';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 상품 추천 조회
  * GET /api/recommendations?type=personalized|similar|popular

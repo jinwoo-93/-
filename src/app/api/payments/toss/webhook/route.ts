@@ -6,6 +6,8 @@ import {
   mapTossMethodToInternal,
 } from '@/lib/payments/toss';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 토스페이먼츠 웹훅
  * 가상계좌 입금 완료 등의 이벤트를 처리합니다.

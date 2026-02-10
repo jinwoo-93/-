@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 
 import { pusherServer, getChatChannelName, PUSHER_EVENTS } from '@/lib/pusher';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 타이핑 상태 전송
  * POST /api/chat/typing

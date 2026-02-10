@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Filter, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useLanguage } from '@/hooks/useLanguage';
 import type { Post } from '@/types';
 
-export default function PostsPage() {
+function PostsContent() {
   const searchParams = useSearchParams();
   const { t, language } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -154,5 +154,13 @@ export default function PostsPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function PostsPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner size="lg" className="py-12" />}>
+      <PostsContent />
+    </Suspense>
   );
 }

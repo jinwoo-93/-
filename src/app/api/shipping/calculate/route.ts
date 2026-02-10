@@ -7,6 +7,8 @@ import {
   getKoreaRegionCode,
 } from '@/lib/shipping';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 배송비 계산 API
  * POST /api/shipping/calculate

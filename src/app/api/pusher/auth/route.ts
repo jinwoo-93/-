@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 
 import { pusherServer } from '@/lib/pusher';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Pusher 프라이빗 채널 인증
  * POST /api/pusher/auth

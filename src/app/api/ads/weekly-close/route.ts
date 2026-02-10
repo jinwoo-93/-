@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 주간 광고 입찰 마감 및 당첨자 선정 API (Cron Job)
  * 매주 월요일 오전 10시 KST (UTC 1시)에 실행

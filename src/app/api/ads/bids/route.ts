@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { adBidSchema } from '@/lib/validations';
 import { MIN_BID_AMOUNT } from '@/lib/constants';
 
+export const dynamic = 'force-dynamic';
+
 // 입찰하기
 export async function POST(request: NextRequest) {
   try {

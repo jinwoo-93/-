@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { randomBytes, createHash } from 'crypto';
 import { sendSMS } from '@/lib/sms';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 비밀번호 재설정 요청 (인증번호 발송)
  * POST /api/auth/forgot-password

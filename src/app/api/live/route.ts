@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { randomBytes } from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 라이브 방송 목록 조회
  * GET /api/live

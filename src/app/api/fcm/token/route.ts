@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { saveFcmToken } from '@/lib/fcm';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const fcmTokenSchema = z.object({
   token: z.string().min(1, 'FCM 토큰이 필요합니다.'),
 });

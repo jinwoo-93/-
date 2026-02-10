@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { createWebPayment, createWapPayment } from '@/lib/payments/alipay';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 알리페이 결제 생성
  */

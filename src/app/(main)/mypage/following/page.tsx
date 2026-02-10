@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Users, ArrowLeft, Star } from 'lucide-react';
+import { Users, ArrowLeft, Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,7 +24,7 @@ interface FollowUser {
   followedAt: string;
 }
 
-export default function FollowingPage() {
+function FollowingContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -217,5 +217,23 @@ export default function FollowingPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="container-app py-6">
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    </div>
+  );
+}
+
+export default function FollowingPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <FollowingContent />
+    </Suspense>
   );
 }

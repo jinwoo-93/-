@@ -133,3 +133,236 @@ export function convertCurrency(
   }
   return Math.round(amount / rate);
 }
+
+// 거래 방향 정보
+export type TradeDirection = 'KR_TO_CN' | 'CN_TO_KR';
+
+export interface TradeInfo {
+  direction: TradeDirection;
+  icon: string;
+  label: { ko: string; zh: string };
+  shortLabel: string;
+  bgColor: string;
+  textColor: string;
+  borderColor: string;
+  hoverBgColor: string;
+}
+
+export function getTradeInfo(direction: TradeDirection): TradeInfo {
+  if (direction === 'KR_TO_CN') {
+    return {
+      direction: 'KR_TO_CN',
+      icon: '🇰🇷→🇨🇳',
+      label: { ko: '한국 → 중국', zh: '韩国 → 中国' },
+      shortLabel: 'KR→CN',
+      bgColor: 'bg-korea-500',
+      textColor: 'text-white',
+      borderColor: 'border-korea-500',
+      hoverBgColor: 'hover:bg-korea-600',
+    };
+  }
+  return {
+    direction: 'CN_TO_KR',
+    icon: '🇨🇳→🇰🇷',
+    label: { ko: '중국 → 한국', zh: '中国 → 韩国' },
+    shortLabel: 'CN→KR',
+    bgColor: 'bg-china-500',
+    textColor: 'text-white',
+    borderColor: 'border-china-500',
+    hoverBgColor: 'hover:bg-china-600',
+  };
+}
+
+// 사용자 뱃지 정보
+export type UserBadgeType = 'excellent' | 'business' | 'top' | 'new' | 'verified';
+
+export interface UserBadgeInfo {
+  type: UserBadgeType;
+  label: { ko: string; zh: string };
+  bgColor: string;
+  textColor: string;
+  icon: string;
+}
+
+export function getUserBadge(type: UserBadgeType): UserBadgeInfo {
+  const badges: Record<UserBadgeType, UserBadgeInfo> = {
+    excellent: {
+      type: 'excellent',
+      label: { ko: '우수 판매자', zh: '优秀卖家' },
+      bgColor: 'bg-gradient-to-r from-yellow-400 to-orange-500',
+      textColor: 'text-white',
+      icon: '⭐',
+    },
+    business: {
+      type: 'business',
+      label: { ko: '사업자 인증', zh: '企业认证' },
+      bgColor: 'bg-blue-500',
+      textColor: 'text-white',
+      icon: '🏢',
+    },
+    top: {
+      type: 'top',
+      label: { ko: 'TOP 셀러', zh: 'TOP卖家' },
+      bgColor: 'bg-gradient-to-r from-purple-500 to-pink-500',
+      textColor: 'text-white',
+      icon: '👑',
+    },
+    new: {
+      type: 'new',
+      label: { ko: '신규', zh: '新店' },
+      bgColor: 'bg-green-500',
+      textColor: 'text-white',
+      icon: '🆕',
+    },
+    verified: {
+      type: 'verified',
+      label: { ko: '본인인증', zh: '实名认证' },
+      bgColor: 'bg-teal-500',
+      textColor: 'text-white',
+      icon: '✓',
+    },
+  };
+  return badges[type];
+}
+
+// 주문 상태 정보
+export type OrderStatus =
+  | 'PENDING_PAYMENT'
+  | 'PAID'
+  | 'SHIPPING'
+  | 'DELIVERED'
+  | 'CONFIRMED'
+  | 'DISPUTED'
+  | 'REFUNDED'
+  | 'CANCELLED';
+
+export interface OrderStatusInfo {
+  status: OrderStatus;
+  label: { ko: string; zh: string };
+  color: string;
+  bgColor: string;
+  icon: string;
+}
+
+export function getOrderStatusInfo(status: OrderStatus): OrderStatusInfo {
+  const statuses: Record<OrderStatus, OrderStatusInfo> = {
+    PENDING_PAYMENT: {
+      status: 'PENDING_PAYMENT',
+      label: { ko: '결제 대기', zh: '待付款' },
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
+      icon: '⏳',
+    },
+    PAID: {
+      status: 'PAID',
+      label: { ko: '결제 완료', zh: '已付款' },
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      icon: '💳',
+    },
+    SHIPPING: {
+      status: 'SHIPPING',
+      label: { ko: '배송 중', zh: '配送中' },
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      icon: '🚚',
+    },
+    DELIVERED: {
+      status: 'DELIVERED',
+      label: { ko: '배송 완료', zh: '已送达' },
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      icon: '📦',
+    },
+    CONFIRMED: {
+      status: 'CONFIRMED',
+      label: { ko: '구매 확정', zh: '确认收货' },
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      icon: '✅',
+    },
+    DISPUTED: {
+      status: 'DISPUTED',
+      label: { ko: '분쟁 중', zh: '争议中' },
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+      icon: '⚠️',
+    },
+    REFUNDED: {
+      status: 'REFUNDED',
+      label: { ko: '환불 완료', zh: '已退款' },
+      color: 'text-gray-600',
+      bgColor: 'bg-gray-50',
+      icon: '💰',
+    },
+    CANCELLED: {
+      status: 'CANCELLED',
+      label: { ko: '주문 취소', zh: '已取消' },
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-100',
+      icon: '❌',
+    },
+  };
+  return statuses[status];
+}
+
+// 공통 스타일 객체
+export const styles = {
+  // 카드 스타일
+  card: {
+    base: 'bg-white rounded-xl border border-gray-100 shadow-sm transition-all duration-300',
+    hover: 'hover:shadow-xl hover:border-gray-200 hover:scale-[1.01]',
+    interactive: 'cursor-pointer',
+  },
+  // 버튼 스타일
+  button: {
+    primary: 'bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200',
+    secondary: 'bg-white border-2 border-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:border-primary hover:text-primary hover:scale-[1.02] active:scale-[0.98] transition-all duration-200',
+    korea: 'bg-korea-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-korea-600 hover:scale-[1.02] transition-all duration-200',
+    china: 'bg-china-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-china-600 hover:scale-[1.02] transition-all duration-200',
+    escrow: 'bg-escrow-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-escrow-600 hover:scale-[1.02] transition-all duration-200',
+  },
+  // 뱃지 스타일
+  badge: {
+    base: 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-200',
+    korea: 'bg-korea-500 text-white',
+    china: 'bg-china-500 text-white',
+    escrow: 'bg-escrow-500 text-white',
+    success: 'bg-green-500 text-white',
+    warning: 'bg-yellow-500 text-white',
+    error: 'bg-red-500 text-white',
+    info: 'bg-blue-500 text-white',
+    outline: 'bg-white border border-gray-200 text-gray-700',
+  },
+  // 입력 필드 스타일
+  input: {
+    base: 'w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200',
+    error: 'border-red-500 focus:ring-red-500/20 focus:border-red-500',
+  },
+  // 섹션 스타일
+  section: {
+    container: 'container-app py-8',
+    header: 'flex items-center justify-between mb-6',
+    title: 'text-xl md:text-2xl font-bold text-gray-900',
+    subtitle: 'text-sm text-gray-500 mt-1',
+  },
+  // 그리드 스타일
+  grid: {
+    products: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4',
+    categories: 'grid grid-cols-4 md:grid-cols-8 gap-3',
+    features: 'grid grid-cols-1 md:grid-cols-3 gap-6',
+  },
+  // 가격 스타일
+  price: {
+    current: 'text-lg font-bold text-brand-orange',
+    original: 'text-sm text-gray-400 line-through',
+    discount: 'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold text-white bg-red-500',
+    secondary: 'text-sm text-gray-500',
+  },
+  // 아이콘 버튼 스타일
+  iconButton: {
+    base: 'p-2 rounded-full transition-all duration-200',
+    ghost: 'hover:bg-gray-100 text-gray-600 hover:text-gray-900',
+    primary: 'bg-primary/10 text-primary hover:bg-primary/20',
+  },
+} as const;

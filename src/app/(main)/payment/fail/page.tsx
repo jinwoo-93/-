@@ -1,8 +1,9 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { XCircle, ArrowLeft, Headphones } from 'lucide-react';
+import { XCircle, ArrowLeft, Headphones, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -50,7 +51,7 @@ const errorMessages: Record<string, { ko: string; zh: string }> = {
   },
 };
 
-export default function PaymentFailPage() {
+function PaymentFailContent() {
   const searchParams = useSearchParams();
   const { language } = useLanguage();
 
@@ -113,5 +114,21 @@ export default function PaymentFailPage() {
         </p>
       </Card>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+    </div>
+  );
+}
+
+export default function PaymentFailPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PaymentFailContent />
+    </Suspense>
   );
 }

@@ -4,20 +4,20 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98]',
   {
     variants: {
       variant: {
-        default: 'bg-white text-gray-900 border border-gray-200 shadow-sm hover:bg-gray-50 hover:shadow',
-        primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm',
+        default: 'bg-white text-gray-900 border border-gray-200 shadow-sm hover:bg-gray-50 hover:shadow-md',
+        primary: 'bg-primary text-white hover:bg-primary/90 shadow-sm',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline:
-          'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400',
+          'border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:border-gray-400',
         secondary:
           'bg-gray-100 text-gray-900 hover:bg-gray-200',
         ghost: 'hover:bg-gray-100 hover:text-gray-900',
-        link: 'text-blue-600 underline-offset-4 hover:underline',
+        link: 'text-blue-600 underline-offset-4 hover:underline hover:scale-100',
         korea: 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 hover:border-blue-300 shadow-sm',
         china: 'bg-white text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 shadow-sm',
         coupang: 'bg-white text-gray-900 border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300',

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { selectJuryMembers } from '@/lib/jury';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 분쟁 투표 시작 API
  * 분쟁 당사자 또는 관리자만 호출 가능

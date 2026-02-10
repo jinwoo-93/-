@@ -39,6 +39,8 @@ export function Footer() {
       labelZh: '担保支付',
       descKo: '안전한 거래 보장',
       descZh: '安全交易保障',
+      iconColor: 'text-escrow-500',
+      bgColor: 'bg-escrow-50',
     },
     {
       icon: Truck,
@@ -46,6 +48,8 @@ export function Footer() {
       labelZh: '国际配送',
       descKo: '한중 양방향 배송',
       descZh: '韩中双向配送',
+      iconColor: 'text-korea-500',
+      bgColor: 'bg-korea-50',
     },
     {
       icon: CreditCard,
@@ -53,6 +57,8 @@ export function Footer() {
       labelZh: '便捷支付',
       descKo: '다양한 결제 수단',
       descZh: '多种支付方式',
+      iconColor: 'text-china-500',
+      bgColor: 'bg-china-50',
     },
     {
       icon: MessageCircle,
@@ -60,6 +66,8 @@ export function Footer() {
       labelZh: '实时咨询',
       descKo: '한중 양국어 지원',
       descZh: '中韩双语支持',
+      iconColor: 'text-brand-blue',
+      bgColor: 'bg-blue-50',
     },
   ];
 
@@ -70,12 +78,12 @@ export function Footer() {
         <div className="container-app py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {trustBadges.map((badge, index) => (
-              <div key={index} className="flex items-center gap-3 p-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <badge.icon className="w-5 h-5 text-primary" />
+              <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div className={`w-10 h-10 rounded-full ${badge.bgColor} flex items-center justify-center shrink-0`}>
+                  <badge.icon className={`w-5 h-5 ${badge.iconColor}`} />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">
+                  <p className="font-medium text-sm text-gray-900">
                     {language === 'ko' ? badge.labelKo : badge.labelZh}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -100,11 +108,11 @@ export function Footer() {
                 : '直购易购是连接韩国与中国的安全跨境C2C交易平台。通过担保支付和社区仲裁，让您安心交易。'}
             </p>
             {/* 고객센터 정보 */}
-            <div className="bg-card p-4 rounded-lg">
-              <p className="text-sm font-medium mb-1">
+            <div className="bg-gradient-to-r from-korea-50 to-china-50 border border-gray-200 p-4 rounded-xl">
+              <p className="text-sm font-medium mb-1 text-gray-700">
                 {language === 'ko' ? '고객센터' : '客服中心'}
               </p>
-              <p className="text-2xl font-bold text-primary mb-1">
+              <p className="text-2xl font-bold bg-gradient-to-r from-korea-600 to-china-600 bg-clip-text text-transparent mb-1">
                 {language === 'ko' ? '1588-0000' : '400-000-0000'}
               </p>
               <p className="text-xs text-muted-foreground">

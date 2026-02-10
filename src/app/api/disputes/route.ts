@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { disputeCreateSchema } from '@/lib/validations';
 
+export const dynamic = 'force-dynamic';
+
 // 분쟁 생성
 export async function POST(request: NextRequest) {
   try {

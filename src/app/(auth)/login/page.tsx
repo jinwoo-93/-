@@ -55,8 +55,35 @@ export default function LoginPage() {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
-    signIn(provider, { callbackUrl: '/' });
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      // CSRF 토큰 가져오기
+      const csrfRes = await fetch('/api/auth/csrf');
+      const { csrfToken } = await csrfRes.json();
+
+      // 폼을 생성하여 POST 방식으로 소셜 로그인 요청
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/api/auth/signin/${provider}`;
+
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfToken';
+      csrfInput.value = csrfToken;
+      form.appendChild(csrfInput);
+
+      const callbackInput = document.createElement('input');
+      callbackInput.type = 'hidden';
+      callbackInput.name = 'callbackUrl';
+      callbackInput.value = window.location.origin;
+      form.appendChild(callbackInput);
+
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      console.error('Social login error:', error);
+      toast({ title: language === 'ko' ? '로그인 중 오류가 발생했습니다' : '登录过程中发生错误', variant: 'destructive' });
+    }
   };
 
   return (

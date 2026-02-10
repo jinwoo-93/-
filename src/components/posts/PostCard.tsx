@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, ShoppingBag, Star, Truck, Clock, MessageSquare } from 'lucide-react';
+import { Eye, ShoppingBag, Star, Truck, MessageSquare, Shield } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import WishlistButton from '@/components/product/WishlistButton';
+import { TradeBadge } from '@/components/ui/TradeBadge';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCurrency } from '@/hooks/useCurrency';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 import type { Post } from '@/types';
 
 interface PostCardProps {
@@ -38,16 +39,16 @@ export function PostCard({
   // 수평 레이아웃 (검색 결과, 리스트 뷰)
   if (variant === 'horizontal') {
     return (
-      <Link href={`/posts/${post.id}`} className="block">
-        <div className="flex gap-4 p-4 bg-card rounded-lg hover:shadow-md transition-shadow">
+      <Link href={`/posts/${post.id}`} className="block group">
+        <div className="flex gap-4 p-4 bg-white rounded-xl hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border border-gray-100">
           {/* 이미지 */}
-          <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 bg-muted rounded-lg overflow-hidden">
+          <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
             {post.images[0] ? (
               <Image
                 src={post.images[0]}
                 alt={title}
                 fill
-                className="object-cover"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -55,56 +56,61 @@ export function PostCard({
               </div>
             )}
             {/* 거래 방향 뱃지 */}
-            <div className={cn(
-              'absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-medium text-white',
-              isKoreaToChina ? 'bg-blue-600' : 'bg-red-600'
-            )}>
-              {isKoreaToChina ? 'KR→CN' : 'CN→KR'}
+            <div className="absolute top-2 left-2">
+              <TradeBadge direction={post.tradeDirection} size="sm" variant="filled" showIcon={false} />
             </div>
           </div>
 
           {/* 정보 */}
           <div className="flex-1 min-w-0 flex flex-col">
-            <h3 className="font-medium text-sm md:text-base line-clamp-2 mb-2">
+            <h3 className="font-medium text-sm md:text-base line-clamp-2 mb-2 text-gray-900">
               {title}
             </h3>
 
             {/* 가격 */}
             <div className="mb-2">
-              {hasDiscount && (
-                <span className="price-original mr-2">
-                  {formatKRW(post.originalPriceKRW!)}
-                </span>
-              )}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {hasDiscount && (
-                  <span className="price-discount">{discountPercent}%</span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold text-white bg-red-500">
+                    {discountPercent}%
+                  </span>
                 )}
-                <span className="price-current">{format(post.priceKRW, post.priceCNY)}</span>
+                {hasDiscount && (
+                  <span className="text-sm text-gray-400 line-through">
+                    {formatKRW(post.originalPriceKRW!)}
+                  </span>
+                )}
               </div>
+              <span className="text-lg font-bold text-brand-orange">{format(post.priceKRW, post.priceCNY)}</span>
             </div>
 
-            {/* 배송 정보 */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="badge-free-shipping">
-                <Truck className="h-3 w-3 mr-1" />
+            {/* 배송 정보 & 에스크로 */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-korea-700 bg-korea-50 rounded-full">
+                <Truck className="h-3 w-3" />
                 {language === 'ko' ? '국제배송' : '国际配送'}
               </span>
+              {post.hasEscrow && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-escrow-700 bg-escrow-50 rounded-full">
+                  <Shield className="h-3 w-3" />
+                  {language === 'ko' ? '안전거래' : '担保交易'}
+                </span>
+              )}
             </div>
 
             {/* 판매자 & 통계 */}
             <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
               {showSeller && post.user && (
                 <div className="flex items-center gap-1.5">
-                  <Avatar className="h-4 w-4">
+                  <Avatar className="h-5 w-5 border border-gray-200">
                     <AvatarImage src={post.user.profileImage || ''} />
-                    <AvatarFallback className="text-[8px]">
+                    <AvatarFallback className="text-[8px] bg-gray-100">
                       {post.user.nickname?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="truncate max-w-[80px]">{post.user.nickname}</span>
+                  <span className="truncate max-w-[80px] font-medium text-gray-700">{post.user.nickname}</span>
                   {post.user.averageRating && (
-                    <span className="flex items-center gap-0.5 text-[hsl(var(--rating))]">
+                    <span className="flex items-center gap-0.5 text-yellow-500">
                       <Star className="h-3 w-3 fill-current" />
                       {post.user.averageRating.toFixed(1)}
                     </span>
@@ -133,15 +139,15 @@ export function PostCard({
   // 컴팩트 레이아웃 (추천 상품, 작은 카드)
   if (variant === 'compact') {
     return (
-      <Link href={`/posts/${post.id}`} className="block">
-        <div className="product-card">
-          <div className="relative aspect-square bg-muted">
+      <Link href={`/posts/${post.id}`} className="block group">
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+          <div className="relative aspect-square bg-gray-100 overflow-hidden">
             {post.images[0] ? (
               <Image
                 src={post.images[0]}
                 alt={title}
                 fill
-                className="object-cover"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -151,8 +157,8 @@ export function PostCard({
             <WishlistButton postId={post.id} size="sm" variant="card" />
           </div>
           <div className="p-2">
-            <h3 className="text-xs line-clamp-2 mb-1">{title}</h3>
-            <p className="text-sm font-bold text-[hsl(var(--price))]">
+            <h3 className="text-xs line-clamp-2 mb-1 text-gray-900">{title}</h3>
+            <p className="text-sm font-bold text-brand-orange">
               {format(post.priceKRW, post.priceCNY)}
             </p>
           </div>
@@ -163,16 +169,16 @@ export function PostCard({
 
   // 기본 레이아웃 (그리드 뷰)
   return (
-    <Link href={`/posts/${post.id}`} className="block">
-      <div className="product-card h-full">
+    <Link href={`/posts/${post.id}`} className="block group">
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden h-full hover:shadow-xl hover:border-gray-200 hover:scale-[1.02] transition-all duration-300">
         {/* 이미지 영역 */}
-        <div className="relative aspect-square bg-muted">
+        <div className="relative aspect-square bg-gray-100 overflow-hidden">
           {post.images[0] ? (
             <Image
               src={post.images[0]}
               alt={title}
               fill
-              className="object-cover"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -181,16 +187,13 @@ export function PostCard({
           )}
 
           {/* 거래 방향 뱃지 */}
-          <div className={cn(
-            'absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-medium text-white',
-            isKoreaToChina ? 'bg-blue-600' : 'bg-red-600'
-          )}>
-            {isKoreaToChina ? 'KR→CN' : 'CN→KR'}
+          <div className="absolute top-2 left-2">
+            <TradeBadge direction={post.tradeDirection} size="sm" variant="filled" showIcon={false} />
           </div>
 
           {/* 할인 뱃지 */}
           {hasDiscount && (
-            <div className="absolute top-2 right-10 price-discount">
+            <div className="absolute top-2 right-10 px-1.5 py-0.5 rounded text-[10px] font-bold text-white bg-red-500">
               {discountPercent}%
             </div>
           )}
@@ -200,58 +203,59 @@ export function PostCard({
 
           {/* 베스트/신규 뱃지 */}
           {post.isBest && (
-            <span className="absolute bottom-2 left-2 badge-best">BEST</span>
+            <span className="absolute bottom-2 left-2 px-2 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">BEST</span>
           )}
           {post.isNew && (
-            <span className="absolute bottom-2 left-2 badge-new">NEW</span>
+            <span className="absolute bottom-2 left-2 px-2 py-0.5 text-[10px] font-bold text-white bg-green-500 rounded-full">NEW</span>
           )}
         </div>
 
         {/* 상품 정보 */}
         <div className="p-3">
           {/* 제목 */}
-          <h3 className="font-medium text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
+          <h3 className="font-medium text-sm line-clamp-2 mb-2 min-h-[2.5rem] text-gray-900">
             {title}
           </h3>
 
           {/* 가격 */}
           <div className="mb-2">
             {hasDiscount && (
-              <span className="price-original block">
+              <span className="text-xs text-gray-400 line-through block">
                 {formatKRW(post.originalPriceKRW!)}
               </span>
             )}
-            <span className="price-current">
+            <span className="text-lg font-bold text-brand-orange">
               {format(post.priceKRW, post.priceCNY)}
             </span>
           </div>
 
           {/* 배송/혜택 뱃지 */}
           <div className="flex flex-wrap gap-1 mb-2">
-            <span className="badge-free-shipping text-[10px]">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-korea-700 bg-korea-50 rounded">
               {language === 'ko' ? '국제배송' : '国际配送'}
             </span>
             {post.hasEscrow && (
-              <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-green-700 bg-green-50 rounded">
-                {language === 'ko' ? '안전결제' : '担保支付'}
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-escrow-700 bg-escrow-50 rounded">
+                <Shield className="h-2.5 w-2.5" />
+                {language === 'ko' ? '안전거래' : '担保交易'}
               </span>
             )}
           </div>
 
           {/* 판매자 정보 */}
           {showSeller && post.user && (
-            <div className="flex items-center gap-2 mb-2 pt-2 border-t">
-              <Avatar className="h-5 w-5">
+            <div className="flex items-center gap-2 mb-2 pt-2 border-t border-gray-100">
+              <Avatar className="h-5 w-5 border border-gray-200">
                 <AvatarImage src={post.user.profileImage || ''} />
-                <AvatarFallback className="text-xs">
+                <AvatarFallback className="text-xs bg-gray-100">
                   {post.user.nickname?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-muted-foreground truncate flex-1">
+              <span className="text-xs text-gray-600 truncate flex-1">
                 {post.user.nickname}
               </span>
               {post.user.hasExcellentBadge && (
-                <span className="text-[10px] px-1 py-0.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded">
+                <span className="text-[10px] px-1.5 py-0.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full font-medium">
                   TOP
                 </span>
               )}
@@ -260,10 +264,10 @@ export function PostCard({
 
           {/* 통계 */}
           {showStats && (
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3 text-xs text-gray-500">
               {post.user?.averageRating && (
-                <span className="flex items-center gap-0.5">
-                  <Star className="h-3 w-3 fill-[hsl(var(--rating))] text-[hsl(var(--rating))]" />
+                <span className="flex items-center gap-0.5 text-yellow-500">
+                  <Star className="h-3 w-3 fill-current" />
                   {post.user.averageRating.toFixed(1)}
                 </span>
               )}

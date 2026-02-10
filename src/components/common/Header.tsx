@@ -18,8 +18,7 @@ import {
   Clock,
   LogOut,
   Settings,
-  Globe,
-  Plane,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -33,7 +32,7 @@ import {
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
-import { cn } from '@/lib/utils';
+import { cn, type TradeDirection } from '@/lib/utils';
 import LanguageSelector from './LanguageSelector';
 import { signOut } from 'next-auth/react';
 
@@ -48,6 +47,7 @@ export function Header() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [tradeDirection, setTradeDirection] = useState<TradeDirection>('KR_TO_CN');
 
   // 스크롤 감지
   useEffect(() => {
@@ -98,27 +98,54 @@ export function Header() {
           <div className="container-app">
             <div className="flex h-8 items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-4">
-                <Link href="/seller-guide" className="hover:text-foreground">
+                {/* 거래 방향 토글 */}
+                <button
+                  onClick={() => setTradeDirection(tradeDirection === 'KR_TO_CN' ? 'CN_TO_KR' : 'KR_TO_CN')}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200',
+                    tradeDirection === 'KR_TO_CN'
+                      ? 'bg-korea-100 text-korea-700 hover:bg-korea-200'
+                      : 'bg-china-100 text-china-700 hover:bg-china-200'
+                  )}
+                >
+                  {tradeDirection === 'KR_TO_CN' ? '🇰🇷→🇨🇳' : '🇨🇳→🇰🇷'}
+                  <span className="hidden lg:inline">
+                    {tradeDirection === 'KR_TO_CN'
+                      ? (language === 'ko' ? '한국→중국' : '韩国→中国')
+                      : (language === 'ko' ? '중국→한국' : '中国→韩国')
+                    }
+                  </span>
+                </button>
+                <span className="w-px h-3 bg-gray-300" />
+                <Link href="/seller-guide" className="hover:text-foreground transition-colors">
                   {language === 'ko' ? '판매자 센터' : '卖家中心'}
                 </Link>
-                <Link href="/help" className="hover:text-foreground">
+                <Link href="/help" className="hover:text-foreground transition-colors">
                   {language === 'ko' ? '고객센터' : '帮助中心'}
                 </Link>
+                <span className="w-px h-3 bg-gray-300" />
+                <span className="flex items-center gap-1 text-escrow-600 font-medium">
+                  <Shield className="w-3 h-3" />
+                  {language === 'ko' ? '에스크로 안전거래' : '担保安全交易'}
+                </span>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white border hover:border-brand-blue/50 transition-colors cursor-pointer">
-                  <Globe className="h-3.5 w-3.5 text-brand-blue" />
-                  <LanguageSelector variant="minimal" />
-                </div>
-                {!session && (
+              <div className="flex items-center gap-3">
+                <LanguageSelector variant="minimal" />
+                <span className="w-px h-3 bg-gray-300" />
+                {!session ? (
                   <>
-                    <Link href="/login" className="hover:text-foreground font-medium">
+                    <Link href="/login" className="hover:text-foreground font-medium transition-colors">
                       {language === 'ko' ? '로그인' : '登录'}
                     </Link>
-                    <Link href="/register" className="hover:text-foreground font-medium">
+                    <span className="w-px h-3 bg-gray-300" />
+                    <Link href="/register" className="hover:text-foreground font-medium transition-colors">
                       {language === 'ko' ? '회원가입' : '注册'}
                     </Link>
                   </>
+                ) : (
+                  <Link href="/mypage" className="hover:text-foreground font-medium transition-colors">
+                    {language === 'ko' ? '마이페이지' : '我的'}
+                  </Link>
                 )}
               </div>
             </div>
@@ -274,13 +301,7 @@ export function Header() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </>
-                ) : (
-                  <Link href="/login" className="hidden md:block">
-                    <Button size="sm">
-                      {language === 'ko' ? '로그인' : '登录'}
-                    </Button>
-                  </Link>
-                )}
+                ) : null}
               </div>
             </div>
           </div>

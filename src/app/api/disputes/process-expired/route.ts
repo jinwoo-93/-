@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processExpiredVotings } from '@/lib/jury';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 만료된 분쟁 투표 처리 Cron Job
  * 매일 오전 0시 (UTC)에 실행

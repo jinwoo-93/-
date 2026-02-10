@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { postUpdateSchema } from '@/lib/validations';
 
+export const dynamic = 'force-dynamic';
+
 // 게시글 상세 조회
 export async function GET(
   request: NextRequest,

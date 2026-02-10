@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { createUploadPresignedUrl } from '@/lib/storage';
 import { imageUploadRequestSchema } from '@/lib/validations/image';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 이미지 업로드용 Presigned URL 생성 API
  * 클라이언트는 이 URL로 직접 S3에 업로드합니다.

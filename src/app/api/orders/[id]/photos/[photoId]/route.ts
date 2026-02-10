@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { createDownloadPresignedUrl } from '@/lib/storage';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 발송 전 사진 조회 API (Presigned URL 반환)
  * 구매자 또는 판매자만 접근 가능

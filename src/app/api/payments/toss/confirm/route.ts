@@ -7,6 +7,8 @@ import {
   mapTossMethodToInternal,
 } from '@/lib/payments/toss';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 토스페이먼츠 결제 승인
  * 클라이언트에서 결제 완료 후 호출됩니다.

@@ -169,10 +169,10 @@
 
   /* 상품 카드 호버 */
   .product-card {
-    @apply bg-card rounded-lg overflow-hidden transition-all duration-200;
+    @apply bg-white rounded-lg overflow-hidden transition-all duration-200;
   }
   .product-card:hover {
-    @apply shadow-lg;
+    @apply shadow-lg scale-[1.02];
   }
 
   /* 버튼 스타일 */
@@ -230,10 +230,18 @@
 
   /* 카테고리 아이콘 */
   .category-icon {
-    @apply flex flex-col items-center gap-2 p-3 rounded-xl transition-colors;
+    @apply flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200;
   }
   .category-icon:hover {
-    @apply bg-muted;
+    @apply bg-muted scale-105;
+  }
+
+  /* 호버 확대 효과 */
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+  .hover-scale:hover {
+    @apply scale-105;
   }
   .category-icon-circle {
     @apply w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl;

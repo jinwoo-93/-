@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { verifyCode } from '@/lib/sms';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const requestSchema = z.object({
   phone: z.string().min(10, '전화번호가 너무 짧습니다.'),
   code: z.string().length(6, '인증 코드는 6자리입니다.'),

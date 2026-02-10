@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { messageCreateSchema } from '@/lib/validations';
 
+export const dynamic = 'force-dynamic';
+
 // 메시지 전송
 export async function POST(request: NextRequest) {
   try {

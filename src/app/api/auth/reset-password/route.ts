@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { createHash } from 'crypto';
 import bcrypt from 'bcryptjs';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 비밀번호 재설정
  * POST /api/auth/reset-password

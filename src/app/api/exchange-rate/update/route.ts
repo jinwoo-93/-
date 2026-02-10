@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateExchangeRate } from '@/lib/exchange-rate';
 
+export const dynamic = 'force-dynamic';
+
 // Vercel Cron Job에서 호출하는 환율 업데이트 API
 // 매일 오전 9시 KST (0시 UTC)에 실행
 export async function GET(request: NextRequest) {

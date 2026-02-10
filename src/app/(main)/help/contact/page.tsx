@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -18,6 +18,7 @@ import {
   Lightbulb,
   Settings,
   HelpCircle,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -35,7 +36,7 @@ const categories = [
   { id: 'OTHER', icon: HelpCircle, nameKo: '기타', nameZh: '其他' },
 ];
 
-export default function ContactPage() {
+function ContactContent() {
   const { language } = useLanguage();
   const { data: session } = useSession();
   const router = useRouter();
@@ -335,5 +336,21 @@ export default function ContactPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+    </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ContactContent />
+    </Suspense>
   );
 }

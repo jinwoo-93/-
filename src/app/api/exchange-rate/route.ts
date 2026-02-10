@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getExchangeRate } from '@/lib/exchange-rate';
 
+export const dynamic = 'force-dynamic';
+
 // 현재 환율 조회 API
 export async function GET(request: NextRequest) {
   try {

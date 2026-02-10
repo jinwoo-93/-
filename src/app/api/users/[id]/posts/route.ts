@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 사용자의 판매 상품 목록 조회
  * GET /api/users/[id]/posts?page=1&limit=8

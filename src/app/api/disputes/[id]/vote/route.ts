@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { disputeVoteSchema } from '@/lib/validations';
 import { submitJuryVote, checkAndResolveDispute } from '@/lib/jury';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 분쟁 투표 제출
  */

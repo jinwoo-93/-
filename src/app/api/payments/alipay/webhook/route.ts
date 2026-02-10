@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyWebhookSignature, mapAlipayStatusToInternal } from '@/lib/payments/alipay';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 알리페이 웹훅 처리
  * 결제 완료, 환불 등의 알림을 처리합니다.

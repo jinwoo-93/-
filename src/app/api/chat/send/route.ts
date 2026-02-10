@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { sendMessage } from '@/lib/chat';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const directMessageSchema = z.object({
   receiverId: z.string().min(1, '수신자 ID가 필요합니다.'),
   content: z.string().min(1, '메시지 내용이 필요합니다.').max(2000, '메시지는 2000자 이내로 작성해주세요.'),

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 사용자가 받은 리뷰 목록 조회
  * GET /api/users/[id]/reviews?page=1&limit=10

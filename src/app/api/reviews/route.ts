@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { reviewCreateSchema } from '@/lib/validations';
 
+export const dynamic = 'force-dynamic';
+
 // 리뷰 작성
 export async function POST(request: NextRequest) {
   try {

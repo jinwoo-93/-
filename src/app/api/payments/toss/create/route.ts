@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 토스페이먼츠 결제 준비
  * 클라이언트에서 결제창을 띄우기 위한 정보를 반환합니다.

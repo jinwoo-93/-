@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { translateText, autoTranslate } from '@/lib/translation';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const translateSchema = z.object({
   text: z.string().min(1, '번역할 텍스트가 필요합니다.').max(5000, '텍스트는 5000자 이내여야 합니다.'),
   targetLang: z.enum(['KO', 'ZH']).optional(),

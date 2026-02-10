@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 판매자의 최근 주문 조회
  * GET /api/seller/orders/recent?limit=5
