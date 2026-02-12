@@ -310,14 +310,14 @@ export default function SellerDashboardPage() {
             <CardTitle className="text-base">
               {language === 'ko' ? '최근 주문' : '最新订单'}
             </CardTitle>
-            <Link href="/seller/orders">
+            <Link href="/seller/dashboard#orders">
               <Button variant="ghost" size="sm">
                 {language === 'ko' ? '전체 보기' : '查看全部'}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent id="orders">
             {recentOrders.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 {language === 'ko' ? '최근 주문이 없습니다' : '暂无订单'}
@@ -431,7 +431,7 @@ export default function SellerDashboardPage() {
                 <span>{language === 'ko' ? '상품 등록' : '发布商品'}</span>
               </Button>
             </Link>
-            <Link href="/seller/orders">
+            <Link href="/seller/dashboard#orders">
               <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
                 <ShoppingBag className="h-6 w-6" />
                 <span>{language === 'ko' ? '주문 관리' : '订单管理'}</span>

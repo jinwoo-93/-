@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
 import {
   LayoutDashboard,
   Users,
@@ -19,11 +21,17 @@ const adminNavItems = [
   { href: '/admin/settings', icon: Settings, label: '설정' },
 ];
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // 서버 사이드 ADMIN 권한 확인 (2차 방어)
+  const session = await auth();
+  if (!session?.user || session.user.userType !== 'ADMIN') {
+    redirect('/');
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* 사이드바 */}

@@ -141,7 +141,7 @@ function PaymentSuccessContent() {
         )}
 
         <div className="space-y-3">
-          <Link href={orderInfo ? `/orders/${orderInfo.orderId}` : '/my/orders'}>
+          <Link href={orderInfo ? `/orders/${orderInfo.orderId}` : '/mypage/orders'}>
             <Button className="w-full" size="lg">
               <Package className="w-4 h-4 mr-2" />
               {language === 'ko' ? '주문 상세보기' : '查看订单详情'}

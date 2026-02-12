@@ -85,7 +85,7 @@ function PaymentFailContent() {
 
         <div className="space-y-3">
           {orderId && (
-            <Link href={`/checkout/${orderId}`}>
+            <Link href={`/checkout?orderId=${orderId}`}>
               <Button className="w-full" size="lg">
                 {language === 'ko' ? '다시 결제하기' : '重新支付'}
               </Button>

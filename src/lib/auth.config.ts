@@ -13,10 +13,11 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    Kakao({
-      clientId: process.env.KAKAO_CLIENT_ID!,
-      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
-    }),
+    // Kakao는 Client ID/Secret 설정 후 활성화
+    // Kakao({
+    //   clientId: process.env.KAKAO_CLIENT_ID!,
+    //   clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+    // }),
     Credentials({
       name: 'Phone',
       credentials: {
@@ -46,6 +47,16 @@ export const authConfig: NextAuthConfig = {
       }
       return token;
     },
+    async session({ session, token }: any) {
+      // Edge Runtime에서 JWT 토큰의 userType을 세션에 반영
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        if (token.userType) {
+          session.user.userType = token.userType as string;
+        }
+      }
+      return session;
+    },
     async redirect({ url, baseUrl }) {
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       if (new URL(url).origin === baseUrl) return url;
@@ -66,8 +77,22 @@ export const authConfig: NextAuthConfig = {
         return Response.redirect(new URL('/', nextUrl));
       }
 
+      // 관리자 페이지: 로그인 + ADMIN 역할 필요
+      if (isAdminPage) {
+        if (!isLoggedIn) {
+          const loginUrl = new URL('/login', nextUrl);
+          loginUrl.searchParams.set('callbackUrl', nextUrl.pathname);
+          return Response.redirect(loginUrl);
+        }
+        // JWT 토큰의 userType 확인 (auth.ts의 jwt 콜백에서 설정)
+        const userType = (auth as any)?.user?.userType;
+        if (userType !== 'ADMIN') {
+          return Response.redirect(new URL('/', nextUrl));
+        }
+      }
+
       // 보호된 페이지: 로그인 필요
-      if ((isProtectedPage || isAdminPage) && !isLoggedIn) {
+      if (isProtectedPage && !isLoggedIn) {
         const loginUrl = new URL('/login', nextUrl);
         loginUrl.searchParams.set('callbackUrl', nextUrl.pathname);
         return Response.redirect(loginUrl);

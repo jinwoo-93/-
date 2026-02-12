@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { orderCreateSchema } from '@/lib/validations';
 import { generateOrderNumber, calculatePlatformFee } from '@/lib/utils';
+import { calculateShippingFee } from '@/lib/shipping';
 import { FEE_RATES } from '@/lib/constants';
 import { OrderStatus } from '@prisma/client';
 
@@ -155,8 +156,33 @@ export async function POST(request: NextRequest) {
     const feeRate = post.user.isBusinessVerified ? FEE_RATES.BUSINESS : FEE_RATES.REGULAR;
     const itemPriceKRW = post.priceKRW * quantity;
     const itemPriceCNY = post.priceCNY * quantity;
-    const shippingFeeKRW = 15000; // TODO: 실제 배송비 계산
-    const shippingFeeCNY = 81;
+
+    // 배송비 계산 (배송 방향 + 수량 기반 무게 + 배송사 요금)
+    const direction = post.tradeDirection as 'KR_TO_CN' | 'CN_TO_KR';
+    const estimatedWeight = 1 * quantity; // 기본 무게 1kg/개 (Post에 weight 필드 없으므로)
+
+    let companyPricePerKg: number | undefined;
+    let companyMinimumFee: number | undefined;
+
+    if (shippingCompanyId) {
+      const company = await prisma.shippingCompany.findUnique({
+        where: { id: shippingCompanyId },
+        select: { pricePerKg: true, minimumFee: true },
+      });
+      if (company) {
+        companyPricePerKg = company.pricePerKg ?? undefined;
+        companyMinimumFee = company.minimumFee ?? undefined;
+      }
+    }
+
+    const shippingResult = calculateShippingFee(
+      { weight: estimatedWeight, direction },
+      companyPricePerKg,
+      companyMinimumFee
+    );
+    const shippingFeeKRW = shippingResult.feeKRW;
+    const shippingFeeCNY = shippingResult.feeCNY;
+
     const platformFeeKRW = calculatePlatformFee(itemPriceKRW, post.user.isBusinessVerified);
     const platformFeeCNY = calculatePlatformFee(itemPriceCNY, post.user.isBusinessVerified);
     const totalKRW = itemPriceKRW + shippingFeeKRW + platformFeeKRW;

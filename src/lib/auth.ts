@@ -26,8 +26,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        const phone = credentials.phone as string;
+        const code = credentials.code as string;
+
+        // SMS 인증 코드 검증 (DB의 VerificationCode 테이블)
+        const verification = await prisma.verificationCode.findFirst({
+          where: {
+            phone,
+            code,
+            expiresAt: { gt: new Date() },
+          },
+        });
+
+        if (!verification) {
+          // 개발 환경에서만 테스트 코드 "123456" 허용
+          if (process.env.NODE_ENV === 'development' && code === '123456') {
+            // 개발 모드 통과
+          } else {
+            return null; // 인증 실패
+          }
+        } else {
+          // 인증 성공 시 코드 삭제 (재사용 방지)
+          await prisma.verificationCode.delete({
+            where: { id: verification.id },
+          });
+        }
+
+        // 기존 사용자 확인
         const user = await prisma.user.findUnique({
-          where: { phone: credentials.phone as string },
+          where: { phone },
         });
 
         if (user) {
@@ -39,9 +66,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           };
         }
 
+        // 새 사용자 생성
         const newUser = await prisma.user.create({
           data: {
-            phone: credentials.phone as string,
+            phone,
             phoneCountry: 'KR',
             isPhoneVerified: true,
           },
@@ -58,6 +86,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
+    async jwt({ token, user }: { token: JWT; user?: any }) {
+      if (user) {
+        token.id = user.id;
+      }
+      // DB에서 최신 userType 가져와 JWT 토큰에 저장 (미들웨어에서 사용)
+      if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { userType: true },
+          });
+          if (dbUser) {
+            token.userType = dbUser.userType;
+          }
+        } catch {
+          // DB 오류 시 기존 토큰 유지
+        }
+      }
+      return token;
+    },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
         session.user.id = token.id as string;
