@@ -1,50 +1,23 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Shield, Globe, Users, Truck, CreditCard, AlertTriangle, Ban, Receipt, Info, Radio, ShoppingCart, Sparkles, Package, ShoppingBag, ShieldCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { ArrowRight, Shield, Truck, Users, CreditCard, AlertTriangle, Ban, Receipt, Info, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { HeroBanner } from '@/components/home/HeroBanner';
 import LiveStreamList from '@/components/live/LiveStreamList';
 import PurchaseRequestList from '@/components/purchase/PurchaseRequestList';
 import ProductRecommendations from '@/components/product/ProductRecommendations';
 import FloatingExchangeCalculator from '@/components/common/FloatingExchangeCalculator';
-import { EscrowBadge } from '@/components/ui/EscrowBadge';
-
-// 한국어 사용자가 볼 카테고리 (중국 상품 구매용)
-const categoriesForKorean = [
-  { id: '1', name: '패션', icon: '👗', slug: 'fashion', color: 'bg-purple-50 hover:bg-purple-100', direction: 'CN_TO_KR' },
-  { id: '2', name: '전자기기', icon: '📱', slug: 'electronics', color: 'bg-blue-50 hover:bg-blue-100', direction: 'CN_TO_KR' },
-  { id: '3', name: '뷰티', icon: '💄', slug: 'beauty', color: 'bg-pink-50 hover:bg-pink-100', direction: 'CN_TO_KR' },
-  { id: '4', name: '식품', icon: '🍜', slug: 'food', color: 'bg-orange-50 hover:bg-orange-100', direction: 'CN_TO_KR' },
-  { id: '5', name: '생활/가전', icon: '🏠', slug: 'home', color: 'bg-green-50 hover:bg-green-100', direction: 'CN_TO_KR' },
-  { id: '6', name: '유아용품', icon: '👶', slug: 'baby', color: 'bg-yellow-50 hover:bg-yellow-100', direction: 'CN_TO_KR' },
-  { id: '7', name: '건강식품', icon: '💊', slug: 'health', color: 'bg-red-50 hover:bg-red-100', direction: 'CN_TO_KR' },
-  { id: '8', name: '스포츠', icon: '⚽', slug: 'sports', color: 'bg-teal-50 hover:bg-teal-100', direction: 'CN_TO_KR' },
-];
-
-// 중국어 사용자가 볼 카테고리 (한국 상품 구매용)
-const categoriesForChinese = [
-  { id: '1', name: 'K-Beauty', icon: '💄', slug: 'beauty', color: 'bg-pink-50 hover:bg-pink-100', direction: 'KR_TO_CN' },
-  { id: '2', name: 'K-Fashion', icon: '👗', slug: 'fashion', color: 'bg-purple-50 hover:bg-purple-100', direction: 'KR_TO_CN' },
-  { id: '3', name: 'K-Food', icon: '🍜', slug: 'food', color: 'bg-orange-50 hover:bg-orange-100', direction: 'KR_TO_CN' },
-  { id: '4', name: 'K-Pop', icon: '🎵', slug: 'kpop', color: 'bg-indigo-50 hover:bg-indigo-100', direction: 'KR_TO_CN' },
-  { id: '5', name: '电子产品', icon: '📱', slug: 'electronics', color: 'bg-blue-50 hover:bg-blue-100', direction: 'KR_TO_CN' },
-  { id: '6', name: '生活用品', icon: '🏠', slug: 'home', color: 'bg-green-50 hover:bg-green-100', direction: 'KR_TO_CN' },
-  { id: '7', name: '保健食品', icon: '💊', slug: 'health', color: 'bg-red-50 hover:bg-red-100', direction: 'KR_TO_CN' },
-  { id: '8', name: '母婴用品', icon: '👶', slug: 'baby', color: 'bg-yellow-50 hover:bg-yellow-100', direction: 'KR_TO_CN' },
-];
+import { TradeDirectionModal, getSavedDirection, type TradeDirection } from '@/components/common/TradeDirectionModal';
 
 const features = [
   {
-    icon: ShieldCheck,
+    icon: Shield,
     titleKo: '에스크로 결제',
     titleZh: '托管支付',
     descKo: '구매 확정 전까지 안전 보관',
     descZh: '确认收货前安全保管',
-    color: 'text-escrow-600 bg-escrow-50',
-    highlight: true,
   },
   {
     icon: Truck,
@@ -52,8 +25,6 @@ const features = [
     titleZh: '国际配送',
     descKo: '항공/해상 배송 지원',
     descZh: '支持空运/海运',
-    color: 'text-korea-600 bg-korea-50',
-    highlight: false,
   },
   {
     icon: Users,
@@ -61,8 +32,6 @@ const features = [
     titleZh: '社区仲裁',
     descKo: '공정한 배심원 투표',
     descZh: '公平的陪审团投票',
-    color: 'text-purple-600 bg-purple-50',
-    highlight: false,
   },
   {
     icon: CreditCard,
@@ -70,225 +39,169 @@ const features = [
     titleZh: '低手续费',
     descKo: '일반 5% / 사업자 3%',
     descZh: '普通5% / 企业3%',
-    color: 'text-brand-orange bg-orange-50',
-    highlight: false,
   },
 ];
 
 export default function HomePage() {
   const { language } = useLanguage();
+  const [tradeDirection, setTradeDirection] = useState<TradeDirection | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 언어에 따른 카테고리 선택
-  const categories = language === 'ko' ? categoriesForKorean : categoriesForChinese;
+  useEffect(() => {
+    const saved = getSavedDirection();
+    if (saved) setTradeDirection(saved);
+  }, []);
 
-  // 언어에 따른 거래 방향
-  const defaultDirection = language === 'ko' ? 'CN_TO_KR' : 'KR_TO_CN';
+  // 헤더의 직구/역직구 버튼 클릭 이벤트 수신
+  useEffect(() => {
+    const handleOpenModal = () => setIsModalOpen(true);
+    window.addEventListener('open-trade-direction-modal', handleOpenModal);
+    return () => window.removeEventListener('open-trade-direction-modal', handleOpenModal);
+  }, []);
+
+  const handleDirectionSelect = (direction: TradeDirection) => {
+    setTradeDirection(direction);
+    setIsModalOpen(false);
+    // Header의 직구/역직구 버튼 텍스트 갱신
+    window.dispatchEvent(new Event('trade-direction-changed'));
+  };
+
+  const handleOpenModal = () => {
+    // sessionStorage 초기화하여 팝업이 다시 뜨도록
+    sessionStorage.removeItem('jikguyeokgu_popup_shown');
+    setIsModalOpen(true);
+  };
+
+  // 방향에 따라 라벨 결정
+  const direction = tradeDirection ?? (language === 'ko' ? 'CN_TO_KR' : 'KR_TO_CN');
+  const defaultDirection = direction;
+
+  const directionLabel = direction === 'CN_TO_KR'
+    ? { ko: '직구', zh: '直购', flag: '🇨🇳→🇰🇷', desc: language === 'ko' ? '중국 상품 구매' : '购买中国商品' }
+    : { ko: '역직구', zh: '逆直购', flag: '🇰🇷→🇨🇳', desc: language === 'ko' ? '한국 상품 구매' : '购买韩国商品' };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 히어로 배너 캐러셀 */}
+      {/* 직구/역직구 선택 팝업 */}
+      <TradeDirectionModal
+        onSelect={handleDirectionSelect}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+
       <HeroBanner />
 
-      {/* 판매하기/구매하기 버튼 */}
-      <div className="container-app py-6">
-        <div className="grid grid-cols-2 gap-4">
-          <Link href="/posts/create" className="group">
-            <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-korea-100 hover:border-korea-300 hover:scale-[1.02]">
-              <div className="bg-gradient-to-br from-korea-50 to-white p-6 flex flex-col items-center justify-center text-center">
-                <div className="w-14 h-14 rounded-2xl bg-korea-100 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-korea-200 transition-all">
-                  <Package className="w-7 h-7 text-korea-600" />
-                </div>
-                <h3 className="text-xl font-bold text-korea-700 mb-1">
-                  {language === 'ko' ? '판매하기' : '我要卖'}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {language === 'ko' ? '상품을 등록하고 판매하세요' : '上架商品开始销售'}
-                </p>
-                <span className="mt-2 text-xs text-korea-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                  🇰🇷 → 🇨🇳
-                </span>
-              </div>
-            </Card>
-          </Link>
-
-          <Link href={`/posts?direction=${defaultDirection}`} className="group">
-            <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-china-100 hover:border-china-300 hover:scale-[1.02]">
-              <div className="bg-gradient-to-br from-china-50 to-white p-6 flex flex-col items-center justify-center text-center">
-                <div className="w-14 h-14 rounded-2xl bg-china-100 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-china-200 transition-all">
-                  <ShoppingBag className="w-7 h-7 text-china-600" />
-                </div>
-                <h3 className="text-xl font-bold text-china-700 mb-1">
-                  {language === 'ko' ? '구매하기' : '我要买'}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {language === 'ko' ? '상품을 검색하고 구매하세요' : '浏览商品立即购买'}
-                </p>
-                <span className="mt-2 text-xs text-china-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                  🇨🇳 → 🇰🇷
-                </span>
-              </div>
-            </Card>
-          </Link>
-        </div>
-      </div>
-
-      {/* 특징 바 */}
-      <div className="border-y bg-gradient-to-r from-gray-50 to-white">
-        <div className="container-app py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:scale-[1.02] ${
-                  feature.highlight ? 'bg-escrow-50/50 border border-escrow-200' : 'hover:bg-gray-50'
-                }`}
-              >
-                <div className={`p-2.5 rounded-xl ${feature.color}`}>
-                  <feature.icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className={`font-semibold text-sm ${feature.highlight ? 'text-escrow-700' : 'text-gray-900'}`}>
-                    {language === 'ko' ? feature.titleKo : feature.titleZh}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {language === 'ko' ? feature.descKo : feature.descZh}
-                  </p>
-                </div>
-              </div>
-            ))}
+      {/* 선택된 모드 표시 바 */}
+      <div className="border-b border-gray-100 bg-gray-50">
+        <div className="container-app py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-black text-black">
+              {directionLabel.flag}
+            </span>
+            <span className="text-[13px] font-black text-black">
+              {language === 'ko' ? directionLabel.ko : directionLabel.zh}
+            </span>
+            <span className="text-[12px] text-gray-400">
+              {directionLabel.desc}
+            </span>
           </div>
+          <button
+            onClick={handleOpenModal}
+            className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-black transition-colors"
+          >
+            <RefreshCw className="w-3 h-3" />
+            {language === 'ko' ? '변경' : '切换'}
+          </button>
         </div>
       </div>
 
       <div className="container-app py-8 space-y-10">
-        {/* 카테고리 섹션 */}
+        {/* 추천 상품 */}
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-900">
-              {language === 'ko' ? '카테고리' : '分类'}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[18px] font-black text-black">
+              {language === 'ko' ? '추천 상품' : '推荐商品'}
             </h2>
-            <Link href="/categories">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                {language === 'ko' ? '전체보기' : '查看全部'}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-            {categories.map((category) => (
-              <Link key={category.id} href={`/posts?category=${category.slug}&direction=${category.direction}`}>
-                <div className={`flex flex-col items-center p-4 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 hover:shadow-md ${category.color}`}>
-                  <span className="text-3xl mb-2">{category.icon}</span>
-                  <span className="text-xs font-medium text-gray-700 text-center">
-                    {category.name}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* 라이브 커머스 섹션 */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 rounded-lg">
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                <Radio className="h-4 w-4 text-red-500" />
-              </div>
-              {language === 'ko' ? '라이브 방송' : '直播'}
-            </h2>
-            <Link href="/live">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                {language === 'ko' ? '전체보기' : '查看全部'}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <LiveStreamList limit={4} showTitle={false} />
-        </section>
-
-        {/* AI 추천 상품 섹션 */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <div className="p-1.5 bg-purple-50 rounded-lg">
-                <Sparkles className="h-4 w-4 text-purple-500" />
-              </div>
-              {language === 'ko' ? '맞춤 추천' : '个性化推荐'}
-            </h2>
-            <Link href={`/posts?direction=${defaultDirection}`}>
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                {language === 'ko' ? '전체보기' : '查看全部'}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
+            <Link
+              href={`/posts?direction=${defaultDirection}`}
+              className="text-[13px] text-gray-400 hover:text-black transition-colors flex items-center gap-1"
+            >
+              {language === 'ko' ? '전체보기' : '查看全部'}
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <ProductRecommendations limit={8} showTitle={false} />
         </section>
 
-        {/* 구매대행 요청 섹션 */}
+        {/* 구매대행 */}
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <div className="p-1.5 bg-green-50 rounded-lg">
-                <ShoppingCart className="h-4 w-4 text-green-600" />
-              </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[18px] font-black text-black">
               {language === 'ko' ? '구매대행 요청' : '代购请求'}
             </h2>
-            <Link href="/purchase-requests">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                {language === 'ko' ? '전체보기' : '查看全部'}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
+            <Link
+              href="/purchase-requests"
+              className="text-[13px] text-gray-400 hover:text-black transition-colors flex items-center gap-1"
+            >
+              {language === 'ko' ? '전체보기' : '查看全部'}
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <PurchaseRequestList status="OPEN" limit={4} showTitle={false} />
         </section>
 
-        {/* 서비스 안내 */}
-        <section className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-6 md:p-8">
-          <div className="text-center mb-6">
-            <EscrowBadge variant="filled" size="md" className="mb-3" />
-            <h2 className="text-xl font-bold text-gray-900">
-              {language === 'ko' ? '직구역구가 특별한 이유' : '直购易购的独特之处'}
+        {/* 라이브 */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[18px] font-black text-black flex items-center gap-2">
+              <span className="w-2 h-2 bg-brand-orange rounded-full" />
+              LIVE
             </h2>
+            <Link
+              href="/live"
+              className="text-[13px] text-gray-400 hover:text-black transition-colors flex items-center gap-1"
+            >
+              {language === 'ko' ? '전체보기' : '查看全部'}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
+          <LiveStreamList limit={4} showTitle={false} />
+        </section>
+
+        {/* 서비스 안내 */}
+        <section className="border border-gray-200 p-6 md:p-8">
+          <h2 className="text-[16px] font-black text-black text-center mb-6">
+            {language === 'ko' ? '직구역구가 특별한 이유' : '直购易购的独特之处'}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
-              <div className="w-16 h-16 mx-auto mb-4 bg-escrow-100 rounded-2xl flex items-center justify-center">
-                <ShieldCheck className="w-8 h-8 text-escrow-600" />
-              </div>
-              <h3 className="font-semibold mb-2 text-gray-900">
+            <div className="text-center py-4">
+              <Shield className="w-8 h-8 mx-auto mb-3 text-black" />
+              <h3 className="text-[14px] font-bold text-black mb-1">
                 {language === 'ko' ? '안전한 거래' : '安全交易'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-[12px] text-gray-500">
                 {language === 'ko'
                   ? '에스크로 시스템으로 구매 확정 전까지 결제금이 안전하게 보관됩니다'
                   : '通过托管系统，在确认收货前货款将被安全保管'}
               </p>
             </div>
-            <div className="text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-korea-100 to-china-100 rounded-2xl flex items-center justify-center">
-                <Globe className="w-8 h-8 text-korea-600" />
-              </div>
-              <h3 className="font-semibold mb-2 text-gray-900">
+            <div className="text-center py-4">
+              <Truck className="w-8 h-8 mx-auto mb-3 text-black" />
+              <h3 className="text-[14px] font-bold text-black mb-1">
                 {language === 'ko' ? '양방향 거래' : '双向交易'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-[12px] text-gray-500">
                 {language === 'ko'
                   ? '한국과 중국 양방향으로 상품을 판매하고 구매할 수 있습니다'
                   : '可以在韩国和中国双向销售和购买商品'}
               </p>
             </div>
-            <div className="text-center p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300">
-              <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-2xl flex items-center justify-center">
-                <Users className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="font-semibold mb-2 text-gray-900">
+            <div className="text-center py-4">
+              <Users className="w-8 h-8 mx-auto mb-3 text-black" />
+              <h3 className="text-[14px] font-bold text-black mb-1">
                 {language === 'ko' ? '공정한 분쟁해결' : '公平仲裁'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-[12px] text-gray-500">
                 {language === 'ko'
                   ? '한중 양국 배심원의 공정한 투표로 분쟁을 해결합니다'
                   : '通过韩中两国陪审团的公平投票解决纠纷'}
@@ -297,172 +210,155 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* CTA 섹션 */}
-        <section className="bg-gradient-to-r from-korea-50 via-white to-china-50 border border-gray-200 rounded-2xl p-8 md:p-12 text-center relative overflow-hidden">
-          {/* 배경 장식 */}
-          <div className="absolute top-0 left-0 w-32 h-32 bg-korea-200/30 rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-32 h-32 bg-china-200/30 rounded-full translate-x-1/2 translate-y-1/2" />
-
-          <div className="relative z-10">
-            <div className="flex justify-center mb-4">
-              <span className="text-3xl">🇰🇷</span>
-              <span className="mx-2 text-2xl text-gray-400">⟷</span>
-              <span className="text-3xl">🇨🇳</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-korea-700 to-china-700 bg-clip-text text-transparent">
-              {language === 'ko'
-                ? '지금 바로 시작하세요'
-                : '立即开始'}
-            </h2>
-            <p className="text-gray-600 mb-6 max-w-xl mx-auto">
-              {language === 'ko'
-                ? '간단한 가입으로 한국과 중국의 수백만 고객에게 상품을 판매하세요'
-                : '简单注册，向韩国和中国数百万客户销售商品'}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/posts/create">
-                <Button size="lg" className="bg-gradient-to-r from-korea-600 to-korea-700 text-white hover:from-korea-700 hover:to-korea-800 hover:scale-105 transition-all shadow-lg shadow-korea-500/20">
-                  {language === 'ko' ? '판매 시작하기' : '开始销售'}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href={`/posts?direction=${defaultDirection}`}>
-                <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-900 hover:bg-white hover:border-gray-400 hover:scale-105 transition-all">
-                  {language === 'ko' ? '상품 둘러보기' : '浏览商品'}
-                </Button>
-              </Link>
-            </div>
+        {/* CTA */}
+        <section className="bg-black p-8 md:p-12 text-center">
+          <h2 className="text-[22px] md:text-[28px] font-black text-white mb-3">
+            {language === 'ko' ? '지금 바로 시작하세요' : '立即开始'}
+          </h2>
+          <p className="text-[14px] text-white/60 mb-6 max-w-xl mx-auto">
+            {language === 'ko'
+              ? '간단한 가입으로 한국과 중국의 수백만 고객에게 상품을 판매하세요'
+              : '简单注册，向韩国和中国数百万客户销售商品'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/posts/create"
+              className="inline-flex items-center justify-center h-[44px] px-8 bg-white text-black text-[14px] font-bold hover:bg-gray-100 transition-colors"
+            >
+              {language === 'ko' ? '판매 시작하기' : '开始销售'}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+            <Link
+              href={`/posts?direction=${defaultDirection}`}
+              className="inline-flex items-center justify-center h-[44px] px-8 border border-white/30 text-white text-[14px] font-bold hover:border-white transition-colors"
+            >
+              {language === 'ko' ? '상품 둘러보기' : '浏览商品'}
+            </Link>
           </div>
         </section>
 
-        {/* 세관 공지사항 및 주의사항 */}
-        <section className="space-y-6">
-          {/* 공지사항 헤더 */}
+        {/* 특징 바 - 하단 배치 */}
+        <section className="border-t border-gray-100 pt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-center gap-3 py-3">
+                <feature.icon className="w-5 h-5 text-gray-400 shrink-0" />
+                <div>
+                  <p className="text-[13px] font-bold text-black">
+                    {language === 'ko' ? feature.titleKo : feature.titleZh}
+                  </p>
+                  <p className="text-[11px] text-gray-400">
+                    {language === 'ko' ? feature.descKo : feature.descZh}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 세관 안내 */}
+        <section className="space-y-5">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-6 h-6 text-amber-500" />
-            <h2 className="text-xl font-bold text-gray-900">
-              {language === 'ko' ? '세관 통관 안내 및 주의사항' : '海关通关须知及注意事项'}
+            <AlertTriangle className="w-5 h-5 text-gray-400" />
+            <h2 className="text-[16px] font-black text-black">
+              {language === 'ko' ? '세관 통관 안내' : '海关通关须知'}
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* 한국 → 중국 세관 안내 */}
-            <div className="border border-korea-200 rounded-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-korea-600 to-korea-700 text-white p-4 flex items-center gap-2">
-                <span className="text-xl">🇰🇷</span>
-                <span className="font-semibold">→</span>
-                <span className="text-xl">🇨🇳</span>
-                <span className="ml-2 font-semibold">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* 한국 → 중국 */}
+            <div className="border border-gray-200">
+              <div className="bg-black text-white p-4">
+                <span className="text-[14px] font-bold">
                   {language === 'ko' ? '한국 → 중국 통관 안내' : '韩国 → 中国 通关须知'}
                 </span>
               </div>
               <div className="p-4 space-y-4">
-                {/* 통관 불가 품목 */}
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Ban className="w-5 h-5 text-red-500" />
-                    <h4 className="font-semibold text-red-600">
+                    <Ban className="w-4 h-4 text-brand-orange" />
+                    <h4 className="text-[13px] font-bold text-black">
                       {language === 'ko' ? '통관 불가 품목' : '禁止入境物品'}
                     </h4>
                   </div>
-                  <ul className="text-sm text-gray-600 space-y-1 ml-7">
-                    <li>• {language === 'ko' ? '의약품 (처방약, 마약류)' : '药品（处方药、毒品类）'}</li>
-                    <li>• {language === 'ko' ? '무기류 및 모조 무기' : '武器及仿制武器'}</li>
-                    <li>• {language === 'ko' ? '동식물 및 동식물 제품 (검역 미통과)' : '动植物及动植物产品（未经检疫）'}</li>
-                    <li>• {language === 'ko' ? '음란물 및 정치적 민감 자료' : '淫秽物品及政治敏感资料'}</li>
-                    <li>• {language === 'ko' ? '위조품 및 저작권 침해 상품' : '假冒伪劣及侵权商品'}</li>
-                    <li>• {language === 'ko' ? '인삼 제품 (개인 휴대 5kg 초과 시)' : '人参产品（个人携带超过5kg时）'}</li>
+                  <ul className="text-[12px] text-gray-500 space-y-1 ml-6">
+                    <li>- {language === 'ko' ? '의약품 (처방약, 마약류)' : '药品（处方药、毒品类）'}</li>
+                    <li>- {language === 'ko' ? '무기류 및 모조 무기' : '武器及仿制武器'}</li>
+                    <li>- {language === 'ko' ? '동식물 및 동식물 제품' : '动植物及动植物产品'}</li>
+                    <li>- {language === 'ko' ? '위조품 및 저작권 침해 상품' : '假冒伪劣及侵权商品'}</li>
                   </ul>
                 </div>
-                {/* 관세 부과 품목 */}
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Receipt className="w-5 h-5 text-amber-500" />
-                    <h4 className="font-semibold text-amber-600">
+                    <Receipt className="w-4 h-4 text-gray-400" />
+                    <h4 className="text-[13px] font-bold text-black">
                       {language === 'ko' ? '관세 부과 기준' : '关税征收标准'}
                     </h4>
                   </div>
-                  <ul className="text-sm text-gray-600 space-y-1 ml-7">
-                    <li>• {language === 'ko' ? '개인 물품: 5,000위안 초과 시 과세' : '个人物品：超过5000元人民币征税'}</li>
-                    <li>• {language === 'ko' ? '화장품: 30% 관세 (고급품 50%)' : '化妆品：30%关税（高档品50%）'}</li>
-                    <li>• {language === 'ko' ? '전자제품: 15~20% 관세' : '电子产品：15~20%关税'}</li>
-                    <li>• {language === 'ko' ? '식품류: 15~35% 관세' : '食品类：15~35%关税'}</li>
-                    <li>• {language === 'ko' ? '의류/패션: 20~25% 관세' : '服装/时尚：20~25%关税'}</li>
+                  <ul className="text-[12px] text-gray-500 space-y-1 ml-6">
+                    <li>- {language === 'ko' ? '개인 물품: 5,000위안 초과 시 과세' : '个人物品：超过5000元人民币征税'}</li>
+                    <li>- {language === 'ko' ? '화장품: 30% 관세' : '化妆品：30%关税'}</li>
+                    <li>- {language === 'ko' ? '전자제품: 15~20% 관세' : '电子产品：15~20%关税'}</li>
                   </ul>
                 </div>
               </div>
             </div>
 
-            {/* 중국 → 한국 세관 안내 */}
-            <div className="border border-china-200 rounded-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-china-600 to-china-700 text-white p-4 flex items-center gap-2">
-                <span className="text-xl">🇨🇳</span>
-                <span className="font-semibold">→</span>
-                <span className="text-xl">🇰🇷</span>
-                <span className="ml-2 font-semibold">
+            {/* 중국 → 한국 */}
+            <div className="border border-gray-200">
+              <div className="bg-black text-white p-4">
+                <span className="text-[14px] font-bold">
                   {language === 'ko' ? '중국 → 한국 통관 안내' : '中国 → 韩国 通关须知'}
                 </span>
               </div>
               <div className="p-4 space-y-4">
-                {/* 통관 불가 품목 */}
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Ban className="w-5 h-5 text-red-500" />
-                    <h4 className="font-semibold text-red-600">
+                    <Ban className="w-4 h-4 text-brand-orange" />
+                    <h4 className="text-[13px] font-bold text-black">
                       {language === 'ko' ? '통관 불가 품목' : '禁止入境物品'}
                     </h4>
                   </div>
-                  <ul className="text-sm text-gray-600 space-y-1 ml-7">
-                    <li>• {language === 'ko' ? '의약품 (전문의약품, 한약재 일부)' : '药品（处方药、部分中药材）'}</li>
-                    <li>• {language === 'ko' ? '육류, 유제품 등 축산물' : '肉类、乳制品等畜产品'}</li>
-                    <li>• {language === 'ko' ? '과일, 채소 등 신선 농산물' : '水果、蔬菜等新鲜农产品'}</li>
-                    <li>• {language === 'ko' ? '멸종위기종 관련 제품' : '濒危物种相关产品'}</li>
-                    <li>• {language === 'ko' ? '위조 브랜드 상품' : '假冒品牌商品'}</li>
-                    <li>• {language === 'ko' ? '리튬 배터리 (160Wh 초과)' : '锂电池（超过160Wh）'}</li>
+                  <ul className="text-[12px] text-gray-500 space-y-1 ml-6">
+                    <li>- {language === 'ko' ? '의약품 (전문의약품, 한약재 일부)' : '药品（处方药、部分中药材）'}</li>
+                    <li>- {language === 'ko' ? '육류, 유제품 등 축산물' : '肉类、乳制品等畜产品'}</li>
+                    <li>- {language === 'ko' ? '과일, 채소 등 신선 농산물' : '水果、蔬菜等新鲜农产品'}</li>
+                    <li>- {language === 'ko' ? '위조 브랜드 상품' : '假冒品牌商品'}</li>
                   </ul>
                 </div>
-                {/* 관세 부과 품목 */}
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Receipt className="w-5 h-5 text-amber-500" />
-                    <h4 className="font-semibold text-amber-600">
+                    <Receipt className="w-4 h-4 text-gray-400" />
+                    <h4 className="text-[13px] font-bold text-black">
                       {language === 'ko' ? '관세 부과 기준' : '关税征收标准'}
                     </h4>
                   </div>
-                  <ul className="text-sm text-gray-600 space-y-1 ml-7">
-                    <li>• {language === 'ko' ? '개인 면세: 미화 $150 이하' : '个人免税：150美元以下'}</li>
-                    <li>• {language === 'ko' ? '자가사용 인정: 미화 $200 이하 (간이과세)' : '自用认定：200美元以下（简易征税）'}</li>
-                    <li>• {language === 'ko' ? '의류/신발: 13% 관세 + 10% 부가세' : '服装/鞋类：13%关税 + 10%增值税'}</li>
-                    <li>• {language === 'ko' ? '전자제품: 8% 관세 + 10% 부가세' : '电子产品：8%关税 + 10%增值税'}</li>
-                    <li>• {language === 'ko' ? '건강식품: 8% 관세 + 10% 부가세' : '保健食品：8%关税 + 10%增值税'}</li>
+                  <ul className="text-[12px] text-gray-500 space-y-1 ml-6">
+                    <li>- {language === 'ko' ? '개인 면세: 미화 $150 이하' : '个人免税：150美元以下'}</li>
+                    <li>- {language === 'ko' ? '의류/신발: 13% 관세 + 10% 부가세' : '服装/鞋类：13%关税 + 10%增值税'}</li>
+                    <li>- {language === 'ko' ? '전자제품: 8% 관세 + 10% 부가세' : '电子产品：8%关税 + 10%增值税'}</li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 일반 주의사항 */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+          {/* 주의사항 */}
+          <div className="border border-gray-200 p-5">
             <div className="flex items-start gap-3">
-              <Info className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <Info className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-semibold text-amber-800 mb-2">
-                  {language === 'ko' ? '일반 주의사항' : '一般注意事项'}
+                <h4 className="text-[13px] font-bold text-black mb-2">
+                  {language === 'ko' ? '주의사항' : '注意事项'}
                 </h4>
-                <ul className="text-sm text-amber-700 space-y-1">
-                  <li>• {language === 'ko'
-                    ? '통관 규정은 수시로 변경될 수 있으니, 구매 전 반드시 최신 규정을 확인하세요.'
-                    : '通关规定可能随时变更，购买前请务必确认最新规定。'}</li>
-                  <li>• {language === 'ko'
+                <ul className="text-[12px] text-gray-500 space-y-1">
+                  <li>- {language === 'ko'
+                    ? '통관 규정은 수시로 변경될 수 있으니, 구매 전 최신 규정을 확인하세요.'
+                    : '通关规定可能随时变更，购买前请确认最新规定。'}</li>
+                  <li>- {language === 'ko'
                     ? '관세 및 부가세는 구매자 부담이며, 통관 지연 시 추가 비용이 발생할 수 있습니다.'
                     : '关税及增值税由买家承担，通关延迟时可能产生额外费用。'}</li>
-                  <li>• {language === 'ko'
-                    ? '상품 가격을 허위로 신고할 경우 벌금 및 법적 책임이 발생할 수 있습니다.'
-                    : '虚假申报商品价格可能导致罚款及法律责任。'}</li>
-                  <li>• {language === 'ko'
-                    ? '식품, 건강기능식품은 수량 제한이 있으니 구매 전 확인하세요.'
-                    : '食品、保健食品有数量限制，购买前请确认。'}</li>
-                  <li>• {language === 'ko'
+                  <li>- {language === 'ko'
                     ? '통관 불가 품목 거래 시 직구역구는 책임지지 않습니다.'
                     : '交易禁止入境物品时，直购易购不承担责任。'}</li>
                 </ul>
@@ -470,18 +366,14 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 문의 안내 */}
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              {language === 'ko'
-                ? '세관 통관에 대한 자세한 문의는 관세청(☎ 125) 또는 중국 해관(☎ 12360)으로 연락하세요.'
-                : '如有通关详细咨询，请联系韩国关税厅(☎ 125)或中国海关(☎ 12360)。'}
-            </p>
-          </div>
+          <p className="text-center text-[11px] text-gray-400">
+            {language === 'ko'
+              ? '세관 통관 문의: 관세청(125) / 중국 해관(12360)'
+              : '通关咨询: 韩国关税厅(125) / 中国海关(12360)'}
+          </p>
         </section>
       </div>
 
-      {/* 플로팅 환율 계산기 버튼 */}
       <FloatingExchangeCalculator />
     </div>
   );

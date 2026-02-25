@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Camera,
@@ -58,7 +58,7 @@ export function ShippingManager({
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
 
   // 배송사 목록 로드
-  useState(() => {
+  useEffect(() => {
     async function loadCompanies() {
       try {
         const response = await fetch('/api/shipping/companies');
@@ -73,7 +73,7 @@ export function ShippingManager({
       }
     }
     loadCompanies();
-  });
+  }, []);
 
   // 파일 선택 핸들러
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,30 +118,21 @@ export function ShippingManager({
 
     for (const photo of photos) {
       try {
-        // Presigned URL 요청
-        const presignedRes = await fetch('/api/upload', {
+        const formData = new FormData();
+        formData.append('file', photo.file);
+        formData.append('purpose', 'preShipPhoto');
+
+        const res = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: photo.file.name,
-            contentType: photo.file.type,
-            folder: 'shipping',
-          }),
+          body: formData,
         });
 
-        const presignedData = await presignedRes.json();
-        if (!presignedData.success) {
-          throw new Error('Failed to get upload URL');
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error('Failed to upload image');
         }
 
-        // 이미지 업로드
-        await fetch(presignedData.data.uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': photo.file.type },
-          body: photo.file,
-        });
-
-        urls.push(presignedData.data.fileUrl);
+        urls.push(data.data.url);
       } catch (error) {
         console.error('Upload error:', error);
         throw error;

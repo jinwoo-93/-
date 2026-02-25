@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { reviewCreateSchema } from '@/lib/validations';
+import { addPoints } from '@/lib/points';
+import { rewardReview } from '@/lib/review-reward-system';
 
 export const dynamic = 'force-dynamic';
 
@@ -115,7 +117,28 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: review }, { status: 201 });
+    // 고급 리뷰 보상 시스템 적용
+    let rewardInfo;
+    try {
+      const rewardResult = await rewardReview(session.user.id, review.id, {
+        rating,
+        comment,
+        images,
+      });
+      rewardInfo = rewardResult.reward;
+    } catch (error) {
+      console.error('Failed to reward review:', error);
+      // 보상 실패는 리뷰 작성 자체를 막지 않음
+      rewardInfo = { points: 0, coupons: [], badges: [] };
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        review,
+        reward: rewardInfo, // 보상 정보 포함
+      },
+    }, { status: 201 });
   } catch (error) {
     console.error('Reviews POST error:', error);
     return NextResponse.json(

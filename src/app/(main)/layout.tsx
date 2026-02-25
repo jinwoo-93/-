@@ -3,6 +3,7 @@ import { Footer } from '@/components/common/Footer';
 import { BottomNavigation } from '@/components/common/BottomNavigation';
 import { FloatingKakaoChat } from '@/components/common/FloatingKakaoChat';
 import { FloatingExchangeCalculator } from '@/components/common/FloatingExchangeCalculator';
+import CategoryNav from '@/components/layout/CategoryNav';
 
 export default function MainLayout({
   children,
@@ -13,6 +14,9 @@ export default function MainLayout({
     <div className="flex min-h-screen flex-col bg-background">
       {/* 헤더 - sticky, z-50 */}
       <Header />
+
+      {/* 카테고리 네비게이션 - sticky, z-40 */}
+      <CategoryNav />
 
       {/* 메인 콘텐츠 영역 */}
       <main className="flex-1 pb-20 md:pb-0">

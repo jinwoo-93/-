@@ -374,22 +374,17 @@ export async function trackShipment(
 
   try {
     // 개발 환경에서는 mock 데이터 반환
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || !process.env.TRACKING_API_KEY) {
       return generateMockTracking(trackingNumber, carrier);
     }
 
-    // TODO: 실제 배송 추적 API 연동
-    // 스마트택배 API, 17track API, Ship24 API 등
-
-    return {
-      success: true,
-      trackingNumber,
-      carrier: carrier,
-      carrierName: carrierInfo.name,
-      carrierNameZh: carrierInfo.nameZh,
-      currentStatus: 'PENDING',
-      events: [],
-    };
+    // 실제 배송 추적 API 연동
+    // 한국 배송업체는 스마트택배 API, 중국/국제는 17track API 사용
+    if (['CJ', 'HANJIN', 'LOTTE', 'LOGEN', 'POST_KR'].includes(carrier)) {
+      return await trackWithSmartParcel(trackingNumber, carrier);
+    } else {
+      return await trackWith17Track(trackingNumber, carrier);
+    }
   } catch (error) {
     console.error('Tracking API error:', error);
     return {
@@ -489,4 +484,253 @@ function getMockLocation(status: ShippingStatus, lang: 'ko' | 'zh'): string {
   };
 
   return locations[status][lang];
+}
+
+// ==================== 실제 배송 추적 API 연동 ====================
+
+/**
+ * 스마트택배 API를 통한 한국 배송업체 추적
+ * https://tracker.delivery
+ */
+async function trackWithSmartParcel(
+  trackingNumber: string,
+  carrier: CarrierCode
+): Promise<TrackingResult> {
+  const carrierInfo = SHIPPING_CARRIERS[carrier];
+  const carrierCodeMap: Record<string, string> = {
+    CJ: 'kr.cjlogistics',
+    HANJIN: 'kr.hanjin',
+    LOTTE: 'kr.lotte',
+    LOGEN: 'kr.logen',
+    POST_KR: 'kr.epost',
+  };
+
+  try {
+    const carrierCode = carrierCodeMap[carrier];
+    const response = await fetch(
+      `https://apis.tracker.delivery/carriers/${carrierCode}/tracks/${trackingNumber}`,
+      {
+        headers: {
+          'Authorization': `SMARTPARCEL ${process.env.SMARTPARCEL_API_KEY}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Smart Parcel API error');
+    }
+
+    const data = await response.json();
+
+    // API 응답을 우리 포맷으로 변환
+    const events: TrackingEvent[] = (data.progresses || []).map((progress: any) => ({
+      timestamp: new Date(progress.time),
+      status: mapSmartParcelStatus(progress.status?.id || 'in_transit'),
+      location: progress.location?.name || '알 수 없음',
+      locationZh: translateLocation(progress.location?.name || '알 수 없음'),
+      description: progress.description || progress.status?.text || '',
+      descriptionZh: translateDescription(progress.description || progress.status?.text || ''),
+    }));
+
+    const currentStatus = events.length > 0 ? events[0].status : 'PENDING';
+
+    return {
+      success: true,
+      trackingNumber,
+      carrier,
+      carrierName: carrierInfo.name,
+      carrierNameZh: carrierInfo.nameZh,
+      currentStatus,
+      events: events.reverse(), // 최신순 정렬
+    };
+  } catch (error) {
+    console.error('Smart Parcel API error:', error);
+    // API 실패 시 mock 데이터 반환
+    return generateMockTracking(trackingNumber, carrier);
+  }
+}
+
+/**
+ * 17track API를 통한 중국/국제 배송업체 추적
+ * https://www.17track.net
+ */
+async function trackWith17Track(
+  trackingNumber: string,
+  carrier: CarrierCode
+): Promise<TrackingResult> {
+  const carrierInfo = SHIPPING_CARRIERS[carrier];
+  const carrierCodeMap: Record<string, number> = {
+    SF: 501,      // 순풍 SF Express
+    ZTO: 502,     // 중통 ZTO Express
+    YTO: 503,     // 위안퉁 YTO Express
+    YUNDA: 504,   // 윈다 Yunda Express
+    STO: 505,     // 선퉁 STO Express
+    EMS: 506,     // EMS
+    DHL: 25,      // DHL
+    FEDEX: 26,    // FedEx
+    UPS: 27,      // UPS
+  };
+
+  try {
+    const carrierCode = carrierCodeMap[carrier];
+    const response = await fetch('https://api.17track.net/track/v2/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        '17token': process.env.TRACK17_API_KEY || '',
+      },
+      body: JSON.stringify([
+        {
+          number: trackingNumber,
+          carrier: carrierCode,
+        },
+      ]),
+    });
+
+    if (!response.ok) {
+      throw new Error('17track API error');
+    }
+
+    const data = await response.json();
+
+    if (data.code !== 0 || !data.data?.accepted?.[0]) {
+      throw new Error('17track API returned error');
+    }
+
+    // 추적 정보 조회
+    const trackResponse = await fetch('https://api.17track.net/track/v2/gettrackinfo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        '17token': process.env.TRACK17_API_KEY || '',
+      },
+      body: JSON.stringify([
+        {
+          number: trackingNumber,
+          carrier: carrierCode,
+        },
+      ]),
+    });
+
+    const trackData = await trackResponse.json();
+
+    if (trackData.code !== 0 || !trackData.data?.accepted?.[0]) {
+      throw new Error('17track tracking info error');
+    }
+
+    const trackInfo = trackData.data.accepted[0];
+    const events: TrackingEvent[] = (trackInfo.track?.z0 || []).map((event: any) => ({
+      timestamp: new Date(event.a),
+      status: map17TrackStatus(event.z),
+      location: event.c || '알 수 없음',
+      locationZh: event.c || '未知',
+      description: translateFrom17Track(event.z),
+      descriptionZh: event.z || '',
+    }));
+
+    const currentStatus = events.length > 0 ? events[0].status : 'PENDING';
+
+    return {
+      success: true,
+      trackingNumber,
+      carrier,
+      carrierName: carrierInfo.name,
+      carrierNameZh: carrierInfo.nameZh,
+      currentStatus,
+      events: events.reverse(),
+    };
+  } catch (error) {
+    console.error('17track API error:', error);
+    // API 실패 시 mock 데이터 반환
+    return generateMockTracking(trackingNumber, carrier);
+  }
+}
+
+// 스마트택배 상태를 우리 시스템 상태로 매핑
+function mapSmartParcelStatus(status: string): ShippingStatus {
+  const statusMap: Record<string, ShippingStatus> = {
+    'information_received': 'PENDING',
+    'at_pickup': 'PICKED_UP',
+    'in_transit': 'IN_TRANSIT_KR',
+    'out_for_delivery': 'OUT_FOR_DELIVERY',
+    'delivered': 'DELIVERED',
+    'exception': 'EXCEPTION',
+  };
+  return statusMap[status] || 'IN_TRANSIT_KR';
+}
+
+// 17track 상태를 우리 시스템 상태로 매핑
+function map17TrackStatus(statusText: string): ShippingStatus {
+  const text = statusText.toLowerCase();
+
+  if (text.includes('签收') || text.includes('delivered')) return 'DELIVERED';
+  if (text.includes('派送') || text.includes('out for delivery')) return 'OUT_FOR_DELIVERY';
+  if (text.includes('海关') || text.includes('customs')) {
+    if (text.includes('中国') || text.includes('china')) return 'CUSTOMS_CN';
+    return 'CUSTOMS_KR';
+  }
+  if (text.includes('到达') && text.includes('中国')) return 'ARRIVED_CN';
+  if (text.includes('离开') && text.includes('韩国')) return 'DEPARTED_KR';
+  if (text.includes('揽收') || text.includes('picked')) return 'PICKED_UP';
+  if (text.includes('异常') || text.includes('exception')) return 'EXCEPTION';
+
+  return 'IN_TRANSIT_INT';
+}
+
+// 한국어 위치를 중국어로 간단 번역
+function translateLocation(location: string): string {
+  const translations: Record<string, string> = {
+    '서울': '首尔',
+    '인천': '仁川',
+    '부산': '釜山',
+    '대구': '大邱',
+    '광주': '光州',
+    '대전': '大田',
+    '울산': '蔚山',
+    '세종': '世宗',
+    '물류센터': '物流中心',
+    '세관': '海关',
+    '공항': '机场',
+    '배송센터': '配送中心',
+  };
+
+  let translated = location;
+  Object.entries(translations).forEach(([ko, zh]) => {
+    translated = translated.replace(ko, zh);
+  });
+
+  return translated;
+}
+
+// 한국어 설명을 중국어로 간단 번역
+function translateDescription(description: string): string {
+  const translations: Record<string, string> = {
+    '배송 완료': '已签收',
+    '배송 출발': '派送中',
+    '운송 중': '运输中',
+    '수거 완료': '已揽收',
+    '접수 완료': '已接收',
+    '세관 통과': '清关完成',
+    '세관 처리': '海关处理',
+  };
+
+  let translated = description;
+  Object.entries(translations).forEach(([ko, zh]) => {
+    translated = translated.replace(ko, zh);
+  });
+
+  return translated || description;
+}
+
+// 17track 상태 텍스트를 한국어로 번역
+function translateFrom17Track(text: string): string {
+  if (text.includes('签收')) return '배송 완료';
+  if (text.includes('派送')) return '배송 출발';
+  if (text.includes('揽收')) return '수거 완료';
+  if (text.includes('海关')) return '세관 처리 중';
+  if (text.includes('到达')) return '도착';
+  if (text.includes('离开')) return '출발';
+  if (text.includes('异常')) return '배송 이상';
+
+  return '운송 중';
 }

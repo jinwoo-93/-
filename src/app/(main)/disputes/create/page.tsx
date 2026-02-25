@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -65,7 +65,7 @@ const DISPUTE_REASONS = {
   ],
 };
 
-export default function DisputeCreatePage() {
+function DisputeCreateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -152,24 +152,18 @@ export default function DisputeCreatePage() {
       const uploadedUrls: string[] = [];
 
       for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('purpose', 'dispute');
+
         const response = await fetch('/api/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: file.name,
-            contentType: file.type,
-            purpose: 'evidence',
-          }),
+          body: formData,
         });
         const data = await response.json();
 
         if (data.success) {
-          await fetch(data.data.uploadUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': file.type },
-            body: file,
-          });
-          uploadedUrls.push(data.data.publicUrl);
+          uploadedUrls.push(data.data.url);
         }
       }
 
@@ -434,5 +428,17 @@ export default function DisputeCreatePage() {
         </Button>
       </form>
     </div>
+  );
+}
+
+export default function DisputeCreatePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <DisputeCreateContent />
+    </Suspense>
   );
 }

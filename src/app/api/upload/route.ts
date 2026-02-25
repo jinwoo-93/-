@@ -1,18 +1,29 @@
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createUploadPresignedUrl } from '@/lib/storage';
-import { imageUploadRequestSchema } from '@/lib/validations/image';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * 이미지 업로드용 Presigned URL 생성 API
- * 클라이언트는 이 URL로 직접 S3에 업로드합니다.
- */
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT!,
+  credentials: {
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+  },
+  forcePathStyle: true,
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  responseChecksumValidation: 'WHEN_REQUIRED',
+});
+
+const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!;
+const PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || '';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
@@ -20,133 +31,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const formData = await request.formData();
+    const file = formData.get('file') as File | null;
+    const purpose = (formData.get('purpose') as string) || 'post';
 
-    // 요청 검증
-    const validated = imageUploadRequestSchema.safeParse(body);
-
-    if (!validated.success) {
+    if (!file || !file.type.startsWith('image/')) {
       return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: '잘못된 요청입니다.',
-            details: validated.error.errors,
-          },
-        },
+        { success: false, error: { code: 'VALIDATION_ERROR', message: '이미지 파일이 필요합니다.' } },
         { status: 400 }
       );
     }
 
-    const { filename, contentType, size, purpose } = validated.data;
-
-    // Presigned URL 생성
-    const result = await createUploadPresignedUrl(filename, contentType, size, purpose);
-
-    if (!result) {
+    if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'UPLOAD_ERROR', message: '업로드 URL 생성에 실패했습니다.' },
-        },
-        { status: 500 }
+        { success: false, error: { code: 'VALIDATION_ERROR', message: '파일 크기는 5MB 이하여야 합니다.' } },
+        { status: 400 }
       );
     }
+
+    const key = `${purpose}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    await s3.send(new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type,
+    }));
 
     return NextResponse.json({
       success: true,
-      data: {
-        uploadUrl: result.uploadUrl,
-        fileKey: result.fileKey,
-        publicUrl: result.publicUrl,
-      },
+      data: { url: `${PUBLIC_URL}/${key}` },
     });
   } catch (error) {
-    console.error('Upload API error:', error);
-
-    const message = error instanceof Error ? error.message : '서버 오류가 발생했습니다.';
-
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_ERROR', message } },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * 다중 이미지 업로드용 Presigned URL 일괄 생성
- */
-export async function PUT(request: NextRequest) {
-  try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.' } },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-
-    if (!Array.isArray(body.files) || body.files.length === 0) {
-      return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: '파일 정보가 필요합니다.' } },
-        { status: 400 }
-      );
-    }
-
-    if (body.files.length > 10) {
-      return NextResponse.json(
-        { success: false, error: { code: 'TOO_MANY_FILES', message: '한 번에 최대 10개까지 업로드할 수 있습니다.' } },
-        { status: 400 }
-      );
-    }
-
-    const results = await Promise.all(
-      body.files.map(async (file: any) => {
-        const validated = imageUploadRequestSchema.safeParse(file);
-
-        if (!validated.success) {
-          return { success: false, filename: file.filename, error: validated.error.errors };
-        }
-
-        const result = await createUploadPresignedUrl(
-          validated.data.filename,
-          validated.data.contentType,
-          validated.data.size,
-          validated.data.purpose
-        );
-
-        if (!result) {
-          return { success: false, filename: file.filename, error: 'URL 생성 실패' };
-        }
-
-        return {
-          success: true,
-          filename: file.filename,
-          ...result,
-        };
-      })
-    );
-
-    const successCount = results.filter((r) => r.success).length;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        total: body.files.length,
-        successCount,
-        failedCount: body.files.length - successCount,
-        results,
-      },
-    });
-  } catch (error) {
-    console.error('Batch upload API error:', error);
-
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다.' } },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: '업로드에 실패했습니다.' } },
       { status: 500 }
     );
   }

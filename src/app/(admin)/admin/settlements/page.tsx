@@ -15,7 +15,14 @@ interface Settlement {
   id: string;
   userId: string;
   userNickname: string;
-  amount: number;
+  userProfileImage: string | null;
+  bankName: string | null;
+  accountNumber: string | null;
+  accountHolder: string | null;
+  totalRevenue: number;
+  platformFee: number;
+  netAmount: number;
+  orderCount: number;
   status: string;
   createdAt: string;
   settledAt: string | null;
@@ -27,6 +34,7 @@ interface SettlementStats {
   pendingCount: number;
   todayRevenue: number;
   monthRevenue: number;
+  totalOrders: number;
 }
 
 export default function AdminSettlementsPage() {
@@ -48,38 +56,23 @@ export default function AdminSettlementsPage() {
       }
       fetchData();
     }
-  }, [authLoading, isAuthenticated, isAdmin]);
+  }, [authLoading, isAuthenticated, isAdmin, period]);
 
   const fetchData = async () => {
-    // TODO: 실제 API 연동
-    setStats({
-      totalPending: 5000000,
-      totalSettled: 150000000,
-      pendingCount: 23,
-      todayRevenue: 1500000,
-      monthRevenue: 45000000,
-    });
-    setSettlements([
-      {
-        id: '1',
-        userId: 'user1',
-        userNickname: 'seller1',
-        amount: 500000,
-        status: 'PENDING',
-        createdAt: new Date().toISOString(),
-        settledAt: null,
-      },
-      {
-        id: '2',
-        userId: 'user2',
-        userNickname: 'seller2',
-        amount: 1200000,
-        status: 'COMPLETED',
-        createdAt: new Date().toISOString(),
-        settledAt: new Date().toISOString(),
-      },
-    ]);
-    setIsLoading(false);
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/settlements?period=${period}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setSettlements(data.data.settlements);
+        setStats(data.data.stats);
+      }
+    } catch (error) {
+      console.error('Failed to fetch settlements:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (authLoading || isLoading) return <LoadingPage />;
@@ -197,30 +190,60 @@ export default function AdminSettlementsPage() {
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
                     {language === 'ko' ? '판매자' : '卖家'}
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '금액' : '金额'}
+                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                    {language === 'ko' ? '총 매출' : '总销售额'}
+                  </th>
+                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                    {language === 'ko' ? '수수료(5%)' : '手续费(5%)'}
+                  </th>
+                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                    {language === 'ko' ? '순 정산액' : '净结算额'}
+                  </th>
+                  <th className="text-center p-4 text-sm font-medium text-muted-foreground">
+                    {language === 'ko' ? '주문 수' : '订单数'}
                   </th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
                     {language === 'ko' ? '상태' : '状态'}
-                  </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '신청일' : '申请日'}
-                  </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '작업' : '操作'}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {settlements.map((settlement) => (
-                  <tr key={settlement.id} className="border-b">
+                  <tr key={settlement.id} className="border-b hover:bg-gray-50">
                     <td className="p-4">
-                      <p className="font-medium">{settlement.userNickname}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">{settlement.userNickname}</div>
+                        {settlement.accountHolder && (
+                          <div className="text-xs text-gray-500">
+                            ({settlement.accountHolder})
+                          </div>
+                        )}
+                      </div>
+                      {settlement.bankName && settlement.accountNumber && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {settlement.bankName} {settlement.accountNumber}
+                        </div>
+                      )}
                     </td>
-                    <td className="p-4">
-                      <p className="font-bold">
-                        {format(settlement.amount, settlement.amount / 185)}
+                    <td className="p-4 text-right">
+                      <p className="font-medium">
+                        {format(settlement.totalRevenue, settlement.totalRevenue / 185)}
                       </p>
+                    </td>
+                    <td className="p-4 text-right">
+                      <p className="font-medium text-blue-600">
+                        {format(settlement.platformFee, settlement.platformFee / 185)}
+                      </p>
+                    </td>
+                    <td className="p-4 text-right">
+                      <p className="font-bold text-green-600">
+                        {format(settlement.netAmount, settlement.netAmount / 185)}
+                      </p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <Badge variant="outline">
+                        {settlement.orderCount}{language === 'ko' ? '건' : '笔'}
+                      </Badge>
                     </td>
                     <td className="p-4">
                       <Badge
@@ -238,16 +261,6 @@ export default function AdminSettlementsPage() {
                           ? (language === 'ko' ? '완료' : '已完成')
                           : (language === 'ko' ? '실패' : '失败')}
                       </Badge>
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {new Date(settlement.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-4">
-                      {settlement.status === 'PENDING' && (
-                        <Button size="sm" variant="outline">
-                          {language === 'ko' ? '정산 처리' : '处理结算'}
-                        </Button>
-                      )}
                     </td>
                   </tr>
                 ))}

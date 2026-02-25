@@ -56,6 +56,10 @@ model User {
   averageRating      Float     @default(0)
   disputeRate        Float     @default(0)
 
+  // 판매자 등급 (Phase 4)
+  sellerGrade        SellerGrade?
+  sellerScore        Int?
+
   // 관계
   posts              Post[]
   ordersAsBuyer      Order[]   @relation("BuyerOrders")
@@ -67,6 +71,7 @@ model User {
   votes              DisputeVote[]
   messages           Message[] @relation("SentMessages")
   receivedMessages   Message[] @relation("ReceivedMessages")
+  shippingCompany    ShippingCompany?   // UserType이 SHIPPING인 경우
 
   notificationSettings NotificationSettings?
 
@@ -75,6 +80,15 @@ model User {
 
   @@index([country, userType])
   @@index([averageRating])
+  @@index([sellerGrade])
+}
+
+enum SellerGrade {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
 }
 
 // ==================== 알림 설정 ====================
@@ -170,15 +184,40 @@ enum ReportStatus {
 // ==================== 찜하기/위시리스트 ====================
 
 model Wishlist {
-  id        String   @id @default(cuid())
-  userId    String
-  postId    String
+  id                 String   @id @default(cuid())
+  userId             String
+  postId             String
 
-  createdAt DateTime @default(now())
+  // Phase 4: 고급 기능
+  priceAlertEnabled  Boolean  @default(false)
+  targetPrice        Float?
+  lastKnownPrice     Float?
+  stockAlertEnabled  Boolean  @default(false)
+  folderId           String?
+  folder             WishlistFolder? @relation(fields: [folderId], references: [id])
+  note               String?  @db.Text
+
+  createdAt          DateTime @default(now())
 
   @@unique([userId, postId])
   @@index([userId])
   @@index([postId])
+  @@index([folderId])
+  @@index([priceAlertEnabled])
+}
+
+// Phase 4: 찜목록 폴더
+model WishlistFolder {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String
+  nameZh      String?
+  description String?    @db.Text
+  wishlists   Wishlist[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
 }
 
 // ==================== 팔로우 ====================
@@ -259,6 +298,7 @@ enum Country {
 enum Language {
   KO
   ZH
+  EN
 }
 
 // ==================== 게시글 ====================
@@ -292,6 +332,13 @@ model Post {
   salesCount      Int            @default(0)
   reorderRate     Float          @default(0)
 
+  // 배송 설정 (Phase 13)
+  shippingCompanyId      String?
+  shippingCompany        ShippingCompany?  @relation(fields: [shippingCompanyId], references: [id])
+  shippingFeeType        ShippingFeeType   @default(BUYER_PAYS)
+  shippingFeeAmount      Int?                             // 판매자 부담 금액 또는 무료배송 기준 금액
+  freeShippingThreshold  Int?                             // 조건부 무료배송 기준 (최소 주문액)
+
   orders          Order[]
 
   createdAt       DateTime       @default(now())
@@ -303,6 +350,7 @@ model Post {
   @@index([salesCount])
   @@index([createdAt])
   @@index([tradeDirection, status])
+  @@index([shippingCompanyId])
 }
 
 enum PostType {
@@ -321,6 +369,12 @@ enum PostStatus {
   EXPIRED
   HIDDEN
   DELETED
+}
+
+enum ShippingFeeType {
+  FREE              // 무료배송 (판매자 부담)
+  BUYER_PAYS        // 구매자 부담
+  CONDITIONAL_FREE  // 조건부 무료배송
 }
 
 // ==================== 카테고리 ====================
@@ -535,16 +589,25 @@ model Review {
   comment       String?   @db.Text
   images        String[]
 
+  // Phase 4: 리뷰 고급 기능
+  likesCount    Int       @default(0)
+  isBest        Boolean   @default(false)
+  bestSelectedAt DateTime?
+
   createdAt     DateTime  @default(now())
 
   @@unique([orderId, reviewerId])
   @@index([revieweeId, rating])
+  @@index([isBest])
+  @@index([likesCount])
 }
 
 // ==================== 배송업체 ====================
 
 model ShippingCompany {
   id                 String           @id @default(cuid())
+  userId             String?          @unique           // 배송업체 회원 연결 (UserType: SHIPPING)
+  user               User?            @relation(fields: [userId], references: [id])
 
   name               String
   nameZh             String
@@ -554,6 +617,7 @@ model ShippingCompany {
   // 인증
   businessLicenseUrl String
   isVerified         Boolean          @default(false)
+  verifiedAt         DateTime?
 
   // 서비스 지역
   serviceRoutes      Json             // [{from: 'KR', to: 'CN'}, ...]
@@ -572,14 +636,27 @@ model ShippingCompany {
   // 뱃지
   hasExcellentBadge  Boolean          @default(false)
 
+  // 보증금 시스템 (Phase 13)
+  depositAmount      Int              @default(1000000)  // 예치 보증금 (기본 100만원)
+  depositBalance     Int              @default(1000000)  // 남은 보증금
+  lastDepositAt      DateTime?                          // 마지막 보증금 충전일
+
+  // API 연동 (추후 확장)
+  apiProvider        String?                            // 'smartparcel', 'sfexpress' 등
+  apiKey             String?                            // API 키 (암호화 필요)
+  apiEnabled         Boolean          @default(false)
+
+  posts              Post[]
   orders             Order[]
   bids               ShippingAdBid[]
   reviews            ShippingReview[]
+  settlements        ShippingSettlement[]               // Phase 13: 정산 내역
 
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
   @@index([isVerified, averageRating])
+  @@index([userId])
 }
 
 model ShippingReview {
@@ -779,6 +856,9 @@ enum NotificationType {
   REVIEW
   SYSTEM
   SUPPORT
+  COUPON    // Phase 4
+  POINT     // Phase 4
+  SELLER    // Phase 4
 }
 
 // ==================== 고객 문의 ====================
@@ -1022,6 +1102,57 @@ enum CouponStatus {
   EXPIRED
 }
 
+// ==================== 판매자 프로모션 (Phase 4) ====================
+
+model Promotion {
+  id             String        @id @default(cuid())
+  sellerId       String
+  type           PromotionType
+  title          String
+  titleZh        String?
+  description    String?       @db.Text
+  descriptionZh  String?       @db.Text
+
+  // 할인 정보
+  discountRate   Float?        // 퍼센트 할인 (예: 10 = 10%)
+  discountAmount Float?        // 고정 금액 할인 (KRW)
+  minPurchase    Float?        // 최소 구매 금액
+
+  // 번들 정보 (BUNDLE 타입)
+  bundlePostIds  String[]      // 번들 상품 ID 배열
+  bundlePrice    Float?        // 번들 가격
+
+  // 적용 대상
+  targetPostIds  String[]      // 특정 상품들 (빈 배열 = 모든 상품)
+  categoryIds    String[]      // 특정 카테고리들
+
+  // 기간
+  startDate      DateTime
+  endDate        DateTime
+  isActive       Boolean       @default(true)
+
+  // 통계
+  viewCount      Int           @default(0)
+  clickCount     Int           @default(0)
+  orderCount     Int           @default(0)
+  revenue        Float         @default(0)
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([sellerId, isActive])
+  @@index([type, isActive])
+  @@index([startDate, endDate])
+}
+
+enum PromotionType {
+  DISCOUNT        // 할인율
+  BUNDLE          // 묶음 판매
+  TIME_SALE       // 타임세일
+  FREE_SHIPPING   // 무료배송
+  COUPON          // 쿠폰
+}
+
 // ==================== 라이브 커머스 ====================
 
 model LiveStream {
@@ -1150,4 +1281,62 @@ enum OfferStatus {
   ACCEPTED
   REJECTED
   WITHDRAWN
+}
+
+// ==================== 배송업체 정산 (Phase 13) ====================
+
+model ShippingSettlement {
+  id                String          @id @default(cuid())
+  companyId         String
+  company           ShippingCompany @relation(fields: [companyId], references: [id])
+
+  // 정산 기간
+  settlementMonth   DateTime                           // 정산 월 (예: 2024-01-01)
+  settlementYear    Int
+  settlementMonthNum Int
+
+  // 배송 통계
+  totalShipments    Int             @default(0)        // 총 배송 건수
+  totalRevenue      Int             @default(0)        // 총 배송비 수익 (KRW)
+
+  // 공제 내역
+  damageDeductions  Int             @default(0)        // 파손 공제액
+  damageCount       Int             @default(0)        // 파손 건수
+  lossDeductions    Int             @default(0)        // 분실 공제액
+  lossCount         Int             @default(0)        // 분실 건수
+
+  // 수수료
+  platformFee       Int             @default(0)        // 플랫폼 수수료 (5%)
+  platformFeeRate   Float           @default(0.05)
+
+  // 최종 정산액
+  grossAmount       Int             @default(0)        // 총 수익
+  netAmount         Int             @default(0)        // 순 수익 (공제 후)
+  finalAmount       Int             @default(0)        // 최종 정산액 (수수료 제외)
+
+  // 상태
+  status            SettlementStatus @default(PENDING)
+  approvedAt        DateTime?
+  approvedBy        String?                            // 승인한 관리자 ID
+  paidAt            DateTime?
+  rejectedAt        DateTime?
+  rejectedReason    String?
+
+  // 메모
+  adminNote         String?         @db.Text
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([companyId, settlementYear, settlementMonthNum])
+  @@index([companyId, status])
+  @@index([settlementMonth])
+  @@index([status])
+}
+
+enum SettlementStatus {
+  PENDING    // 정산 대기
+  APPROVED   // 승인 완료
+  PAID       // 지급 완료
+  REJECTED   // 거부
 }

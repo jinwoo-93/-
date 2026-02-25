@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
+import { addPoints } from '@/lib/points';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,6 +111,24 @@ export async function PATCH(
         link: `/orders/${params.id}`,
       },
     });
+
+    // 구매자에게 포인트 적립 (주문 금액의 1%)
+    const pointsToEarn = Math.floor(order.totalKRW * 0.01);
+    if (pointsToEarn > 0) {
+      try {
+        await addPoints(
+          order.buyerId,
+          pointsToEarn,
+          'PURCHASE_REWARD',
+          `구매 확정 적립 (주문번호: ${order.orderNumber})`,
+          `购买确认积分 (订单号: ${order.orderNumber})`,
+          { orderId: params.id }
+        );
+      } catch (error) {
+        console.error('Failed to add purchase points:', error);
+        // 포인트 적립 실패는 주문 확정 자체를 막지 않음
+      }
+    }
 
     return NextResponse.json({ success: true, data: updatedOrder });
   } catch (error) {

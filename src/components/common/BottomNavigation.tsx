@@ -13,7 +13,6 @@ interface NavItem {
   labelKo: string;
   labelZh: string;
   requireAuth?: boolean;
-  isSpecial?: boolean;
 }
 
 export function BottomNavigation() {
@@ -40,7 +39,6 @@ export function BottomNavigation() {
       labelKo: '등록',
       labelZh: '发布',
       requireAuth: true,
-      isSpecial: true,
     },
     {
       href: '/mypage/wishlist',
@@ -63,38 +61,27 @@ export function BottomNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t md:hidden safe-bottom">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden safe-bottom">
+      <div className="flex items-center justify-around h-[52px] max-w-lg mx-auto">
         {navItems.map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
           const href = item.requireAuth && !session ? '/login' : item.href;
-
-          if (item.isSpecial) {
-            return (
-              <Link
-                key={item.href}
-                href={href}
-                className="flex items-center justify-center -mt-4"
-              >
-                <div className="w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                  <Icon className="h-6 w-6 text-white" />
-                </div>
-              </Link>
-            );
-          }
 
           return (
             <Link
               key={item.href}
               href={href}
               className={cn(
-                'flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors',
-                active ? 'text-primary' : 'text-muted-foreground'
+                'flex flex-col items-center justify-center flex-1 h-full gap-[2px] transition-colors',
+                active ? 'text-black' : 'text-gray-400'
               )}
             >
               <Icon className={cn('h-5 w-5', active && 'stroke-[2.5px]')} />
-              <span className="text-[10px] font-medium">
+              <span className={cn(
+                'text-[10px]',
+                active ? 'font-bold' : 'font-medium'
+              )}>
                 {language === 'ko' ? item.labelKo : item.labelZh}
               </span>
             </Link>

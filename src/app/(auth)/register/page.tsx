@@ -288,13 +288,6 @@ export default function RegisterPage() {
             </Button>
             <Button
               variant="outline"
-              className="bg-[#07C160] hover:bg-[#07C160]/90 text-white border-none"
-              onClick={() => handleSocialRegister('wechat')}
-            >
-              WeChat
-            </Button>
-            <Button
-              variant="outline"
               onClick={() => handleSocialRegister('google')}
             >
               Google

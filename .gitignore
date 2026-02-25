@@ -23,6 +23,11 @@ yarn-error.log*
 # Local env files
 .env
 .env.local
+.cloudflare-r2-credentials.txt
+.toss-credentials.txt
+.pusher-credentials.txt
+.deepl-credentials.txt
+.kakao-credentials.txt
 .env.development.local
 .env.test.local
 .env.production.local

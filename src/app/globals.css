@@ -4,104 +4,55 @@
 
 @layer base {
   :root {
-    /* 직구역구 브랜드 컬러 시스템 (로고 기반) */
-    --background: 0 0% 98%;
-    --foreground: 224 76% 20%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 76% 20%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 76% 20%;
+    --popover-foreground: 0 0% 0%;
 
-    /* Primary: 딥 블루 (로고 메인 컬러) */
-    --primary: 224 76% 33%;
+    /* Primary: KREAM coral red #EF6253 */
+    --primary: 5 85% 63%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: 오렌지 (로고 강조 컬러) */
-    --secondary: 25 95% 53%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary: light gray */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 224 76% 95%;
-    --accent-foreground: 224 76% 33%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
 
-    /* Destructive: 에러/경고 */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success: 성공/확인 */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning: 주의 - 브랜드 오렌지 사용 */
-    --warning: 25 95% 53%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 224 76% 33%;
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --ring: 0 0% 0%;
 
-    --radius: 0.5rem;
+    --radius: 0px;
 
-    /* 쇼핑몰 특화 컬러 */
-    --price: 25 95% 53%;
-    --sale: 0 84% 50%;
-    --discount-badge: 25 95% 53%;
+    /* KREAM specific */
+    --kream-red: 5 85% 63%;
+    --kream-green: 168 64% 42%;
+    --price: 0 0% 0%;
+    --sale: 5 85% 63%;
+    --discount-badge: 5 85% 63%;
     --rating: 45 100% 50%;
 
-    /* 브랜드 전용 */
-    --brand-blue: 224 76% 33%;
-    --brand-orange: 25 95% 53%;
-  }
-
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 13%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 13%;
-    --popover-foreground: 210 40% 98%;
-
-    /* Primary: 밝은 블루 */
-    --primary: 224 76% 48%;
-    --primary-foreground: 0 0% 100%;
-
-    /* Secondary: 밝은 오렌지 */
-    --secondary: 25 95% 58%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 223 47% 20%;
-    --muted-foreground: 218 11% 65%;
-
-    --accent: 224 76% 25%;
-    --accent-foreground: 224 76% 80%;
-
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 76% 40%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 25 95% 58%;
-    --warning-foreground: 0 0% 100%;
-
-    --border: 223 47% 20%;
-    --input: 223 47% 20%;
-    --ring: 224 76% 48%;
-
-    --price: 25 95% 58%;
-    --sale: 0 84% 60%;
-    --discount-badge: 25 95% 58%;
-    --rating: 45 100% 55%;
-
-    /* 브랜드 전용 */
-    --brand-blue: 224 76% 48%;
-    --brand-orange: 25 95% 58%;
+    /* Legacy brand aliases */
+    --brand-blue: 0 0% 0%;
+    --brand-orange: 5 85% 63%;
   }
 }
 
@@ -112,6 +63,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    letter-spacing: -0.02em;
   }
   html {
     padding-top: env(safe-area-inset-top);
@@ -119,159 +71,123 @@
   }
 }
 
-/* ==================== 컴포넌트 스타일 ==================== */
+/* ==================== KREAM Component Styles ==================== */
 @layer components {
-  /* 컨테이너 */
   .container-app {
-    @apply mx-auto w-full max-w-7xl px-4;
+    @apply mx-auto w-full max-w-[1280px] px-4;
   }
 
-  /* 페이지 섹션 */
   .section-header {
     @apply flex items-center justify-between py-4;
   }
   .section-title {
-    @apply text-lg font-bold text-foreground;
+    @apply text-lg font-black tracking-tight text-black;
   }
   .section-more {
-    @apply text-sm text-muted-foreground hover:text-primary flex items-center gap-1;
+    @apply text-sm text-gray-400 hover:text-black flex items-center gap-1 transition-colors;
   }
 
-  /* 상품 가격 */
+  /* Price */
   .price-original {
-    @apply text-sm text-muted-foreground line-through;
+    @apply text-sm text-gray-400 line-through;
   }
   .price-current {
-    @apply text-lg font-bold text-[hsl(var(--price))];
+    @apply text-lg font-bold text-black;
   }
   .price-discount {
-    @apply inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-[hsl(var(--sale))] rounded;
+    @apply inline-flex items-center justify-center px-1 py-0.5 text-xs font-bold text-[#EF6253];
   }
 
-  /* 평점 */
   .rating-star {
-    @apply text-[hsl(var(--rating))];
+    @apply text-yellow-400;
   }
 
-  /* 뱃지 */
+  /* Badges */
   .badge-free-shipping {
-    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-primary bg-primary/10 rounded;
+    @apply inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 bg-gray-100;
   }
   .badge-rocket {
-    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-white bg-blue-500 rounded;
+    @apply inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-white bg-black;
   }
   .badge-best {
-    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-white bg-orange-500 rounded;
+    @apply inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-white bg-black;
   }
   .badge-new {
-    @apply inline-flex items-center px-1.5 py-0.5 text-xs font-medium text-white bg-green-500 rounded;
+    @apply inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-[#EF6253] bg-red-50;
   }
 
-  /* 상품 카드 호버 */
+  /* Product Card */
   .product-card {
-    @apply bg-white rounded-lg overflow-hidden transition-all duration-200;
+    @apply bg-white overflow-hidden transition-all duration-200;
   }
   .product-card:hover {
-    @apply shadow-lg scale-[1.02];
+    @apply opacity-90;
   }
 
-  /* 버튼 스타일 */
+  /* KREAM Buttons */
   .btn-cta {
-    @apply w-full h-12 text-base font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors;
+    @apply w-full h-[52px] text-[15px] font-semibold bg-black text-white rounded-none hover:bg-gray-900 transition-colors;
   }
   .btn-cart {
-    @apply w-full h-12 text-base font-semibold border-2 border-primary text-primary bg-white rounded-lg hover:bg-primary/5 transition-colors;
+    @apply w-full h-[52px] text-[15px] font-semibold border border-black text-black bg-white rounded-none hover:bg-gray-50 transition-colors;
+  }
+  .btn-buy-red {
+    @apply flex-1 h-[52px] text-[15px] font-semibold bg-[#EF6253] text-white rounded-none hover:bg-[#e0534a] transition-colors;
+  }
+  .btn-buy-green {
+    @apply flex-1 h-[52px] text-[15px] font-semibold bg-[#41B979] text-white rounded-none hover:bg-[#3aad6e] transition-colors;
   }
 
-  /* 탭 스타일 */
+  /* Tab */
   .tab-underline {
-    @apply relative pb-3 text-muted-foreground transition-colors;
+    @apply relative pb-3 text-gray-400 font-medium transition-colors text-sm;
   }
   .tab-underline.active {
-    @apply text-foreground font-semibold;
+    @apply text-black font-bold;
   }
   .tab-underline.active::after {
     content: '';
-    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-primary;
+    @apply absolute bottom-0 left-0 right-0 h-[2px] bg-black;
   }
 
-  /* 입력 필드 */
+  /* Search */
   .search-input {
-    @apply w-full h-10 pl-10 pr-4 bg-secondary border-0 rounded-lg text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:outline-none;
+    @apply w-full h-10 px-4 bg-gray-100 border-0 rounded-lg text-sm placeholder:text-gray-400 focus:ring-1 focus:ring-black focus:outline-none;
   }
 
-  /* 리스트 아이템 */
-  .list-item {
-    @apply flex items-center gap-4 p-4 bg-card rounded-lg;
-  }
-  .list-item-hover {
-    @apply hover:bg-muted/50 transition-colors cursor-pointer;
-  }
-
-  /* 분리선 */
   .divider {
-    @apply h-2 bg-muted;
+    @apply h-[8px] bg-gray-100;
   }
 
-  /* 스켈레톤 로딩 */
   .skeleton {
-    @apply animate-pulse bg-muted rounded;
+    @apply animate-pulse bg-gray-100;
   }
 
-  /* 플로팅 버튼 */
-  .floating-btn {
-    @apply fixed z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105;
-  }
-
-  /* 알림 뱃지 */
   .notification-badge {
-    @apply absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-destructive rounded-full;
+    @apply absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center text-[9px] font-bold text-white bg-[#EF6253] rounded-full;
   }
 
-  /* 카테고리 아이콘 */
   .category-icon {
-    @apply flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200;
+    @apply flex flex-col items-center gap-2 p-3 transition-all duration-200;
   }
   .category-icon:hover {
-    @apply bg-muted scale-105;
-  }
-
-  /* 호버 확대 효과 */
-  .hover-scale {
-    @apply transition-transform duration-200;
-  }
-  .hover-scale:hover {
-    @apply scale-105;
+    @apply opacity-70;
   }
   .category-icon-circle {
-    @apply w-12 h-12 rounded-full bg-muted flex items-center justify-center text-2xl;
+    @apply w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl;
   }
 
-  /* 배너 슬라이드 */
   .banner-slide {
-    @apply relative w-full aspect-[2/1] md:aspect-[3/1] rounded-xl overflow-hidden;
+    @apply relative w-full aspect-[2/1] md:aspect-[3/1] overflow-hidden;
   }
 
-  /* 검색 히스토리 */
   .search-history-item {
-    @apply flex items-center justify-between py-2 px-3 hover:bg-muted rounded-lg cursor-pointer;
-  }
-
-  /* 국가별 테마 */
-  .theme-korea {
-    --primary: 211 100% 22%;
-    --primary-foreground: 210 40% 98%;
-  }
-
-  .theme-china {
-    --primary: 4 84% 46%;
-    --primary-foreground: 210 40% 98%;
+    @apply flex items-center justify-between py-2.5 px-0 hover:bg-transparent cursor-pointer border-b border-gray-100;
   }
 }
 
-/* ==================== 유틸리티 ==================== */
+/* ==================== Utilities ==================== */
 @layer utilities {
-  /* 텍스트 말줄임 */
   .line-clamp-1 {
     overflow: hidden;
     display: -webkit-box;
@@ -291,7 +207,6 @@
     -webkit-line-clamp: 3;
   }
 
-  /* 스크롤 숨기기 */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -300,79 +215,32 @@
     display: none;
   }
 
-  /* Safe area padding */
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+  .safe-top { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
-  /* 터치 영역 확대 */
-  .touch-target {
-    @apply relative;
-  }
-  .touch-target::before {
-    content: '';
-    @apply absolute -inset-2;
-  }
+  .touch-target { @apply relative; }
+  .touch-target::before { content: ''; @apply absolute -inset-2; }
 }
 
-/* ==================== 스크롤바 ==================== */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.2);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
-}
-
-/* 모바일에서는 스크롤바 숨기기 */
 @media (max-width: 768px) {
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  * {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  ::-webkit-scrollbar { display: none; }
+  * { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
-/* ==================== 애니메이션 ==================== */
+/* ==================== Animations ==================== */
 @keyframes slideUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
-}
+.animate-slide-up { animation: slideUp 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.2s ease-out; }

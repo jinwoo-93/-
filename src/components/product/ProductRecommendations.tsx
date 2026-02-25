@@ -113,29 +113,61 @@ export default function ProductRecommendations({
 
   if (isLoading) {
     return (
-      <Card className={className}>
-        <CardContent className="py-12 flex justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div className={className}>
+        {showTitle && (
+          <div className="mb-3">
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              {getIcon()}
+              {getTitle()}
+            </h3>
+          </div>
+        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: limit }).map((_, index) => (
+            <div key={index} className="space-y-2">
+              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 animate-pulse" />
+              <div className="h-4 bg-gray-100 rounded animate-pulse" />
+              <div className="h-4 bg-gray-100 rounded w-2/3 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
-  if (products.length === 0) {
-    return null;
-  }
+  // 빈 슬롯 생성 함수
+  const renderEmptySlots = () => {
+    const emptyCount = limit - products.length;
+    return Array.from({ length: emptyCount }).map((_, index) => (
+      <div key={`empty-${index}`} className="space-y-2">
+        <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
+          <div className="text-center">
+            <ShoppingBag className="h-8 w-8 text-gray-300 mx-auto mb-1" />
+            <p className="text-xs text-gray-400">
+              {language === 'ko' ? '상품 없음' : '暂无商品'}
+            </p>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="h-4 bg-gray-50 rounded" />
+          <div className="h-4 bg-gray-50 rounded w-2/3" />
+        </div>
+      </div>
+    ));
+  };
 
   return (
-    <Card className={className}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          {getIcon()}
-          {getTitle()}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {products.map((product) => {
+    <div className={className}>
+      {showTitle && (
+        <div className="mb-3">
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            {getIcon()}
+            {getTitle()}
+          </h3>
+        </div>
+      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {products.map((product) => {
             const productTitle = language === 'zh' && product.titleZh
               ? product.titleZh
               : product.title;
@@ -149,7 +181,7 @@ export default function ProductRecommendations({
               >
                 <div className="space-y-2">
                   {/* 이미지 */}
-                  <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
                     {product.images.length > 0 ? (
                       <Image
                         src={product.images[0]}
@@ -159,33 +191,29 @@ export default function ProductRecommendations({
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
-                        <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                        <ShoppingBag className="h-8 w-8 text-gray-400" />
                       </div>
                     )}
 
                     {/* 추천 이유 배지 */}
-                    <Badge
-                      variant="secondary"
-                      className="absolute bottom-1 left-1 text-[10px] px-1.5 py-0.5 bg-background/80"
-                    >
-                      {reason}
-                    </Badge>
+                    {reason && (
+                      <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-medium text-gray-700">
+                        {reason}
+                      </div>
+                    )}
 
                     {/* 거래 방향 */}
-                    <Badge
-                      variant={product.tradeDirection === 'KR_TO_CN' ? 'korea' : 'china'}
-                      className="absolute top-1 right-1 text-[10px] px-1.5 py-0.5"
-                    >
-                      {product.tradeDirection === 'KR_TO_CN' ? '🇰🇷' : '🇨🇳'}
-                    </Badge>
+                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-medium">
+                      {product.tradeDirection === 'KR_TO_CN' ? '🇰🇷→🇨🇳' : '🇨🇳→🇰🇷'}
+                    </div>
                   </div>
 
                   {/* 정보 */}
                   <div>
-                    <p className="text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                    <p className="text-sm line-clamp-2 group-hover:text-blue-600 transition-colors font-medium">
                       {productTitle}
                     </p>
-                    <p className="text-sm font-bold text-primary mt-1">
+                    <p className="text-sm font-bold text-black mt-1">
                       {format(product.priceKRW, product.priceCNY)}
                     </p>
 
@@ -193,11 +221,11 @@ export default function ProductRecommendations({
                     <div className="flex items-center gap-1 mt-1.5">
                       <Avatar className="h-4 w-4">
                         <AvatarImage src={product.user.profileImage || ''} />
-                        <AvatarFallback className="text-[8px]">
+                        <AvatarFallback className="text-[8px] bg-gray-100">
                           {product.user.nickname?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-muted-foreground truncate">
+                      <span className="text-xs text-gray-500 truncate">
                         {product.user.nickname}
                       </span>
                     </div>
@@ -206,8 +234,10 @@ export default function ProductRecommendations({
               </Link>
             );
           })}
+
+          {/* 빈 슬롯 렌더링 */}
+          {products.length < limit && renderEmptySlots()}
         </div>
-      </CardContent>
-    </Card>
-  );
-}
+      </div>
+    );
+  }

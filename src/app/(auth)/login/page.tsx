@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/useToast';
@@ -23,7 +22,6 @@ export default function LoginPage() {
       return;
     }
     setIsLoading(true);
-    // TODO: 실제 SMS 발송 API 호출
     setTimeout(() => {
       setIsCodeSent(true);
       setIsLoading(false);
@@ -57,11 +55,9 @@ export default function LoginPage() {
 
   const handleSocialLogin = async (provider: string) => {
     try {
-      // CSRF 토큰 가져오기
       const csrfRes = await fetch('/api/auth/csrf');
       const { csrfToken } = await csrfRes.json();
 
-      // 폼을 생성하여 POST 방식으로 소셜 로그인 요청
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/api/auth/signin/${provider}`;
@@ -87,112 +83,106 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl bg-gradient-to-r from-korea to-china bg-clip-text text-transparent">
-            {t('common.appName')}
-          </CardTitle>
-          <CardDescription>
-            {language === 'ko' ? '한중 크로스보더 C2C 마켓플레이스' : '韩中跨境C2C交易平台'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 소셜 로그인 */}
-          <div className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full bg-[#FEE500] hover:bg-[#FEE500]/90 text-black border-none"
-              onClick={() => handleSocialLogin('kakao')}
-            >
-              {t('auth.kakaoLogin')}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full bg-[#03C75A] hover:bg-[#03C75A]/90 text-white border-none"
-              onClick={() => handleSocialLogin('naver')}
-            >
-              {t('auth.naverLogin')}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full bg-[#07C160] hover:bg-[#07C160]/90 text-white border-none"
-              onClick={() => handleSocialLogin('wechat')}
-            >
-              {t('auth.wechatLogin')}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialLogin('google')}
-            >
-              {t('auth.googleLogin')}
-            </Button>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="w-full max-w-[380px]">
+        {/* 로고 */}
+        <div className="text-center mb-10">
+          <h1 className="text-[22px] font-black tracking-tight text-black">
+            JIKGUYEOKGU
+          </h1>
+          <p className="text-[13px] text-gray-400 mt-1">
+            {language === 'ko' ? '한중 크로스보더 마켓플레이스' : '韩中跨境交易平台'}
+          </p>
+        </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {language === 'ko' ? '또는' : '或者'}
-              </span>
-            </div>
-          </div>
+        {/* 소셜 로그인 */}
+        <div className="space-y-2.5 mb-8">
+          <button
+            className="w-full h-[48px] bg-[#FEE500] text-black text-[14px] font-bold hover:brightness-95 transition-all"
+            onClick={() => handleSocialLogin('kakao')}
+          >
+            {t('auth.kakaoLogin')}
+          </button>
+          <button
+            className="w-full h-[48px] bg-[#03C75A] text-white text-[14px] font-bold hover:brightness-95 transition-all"
+            onClick={() => handleSocialLogin('naver')}
+          >
+            {t('auth.naverLogin')}
+          </button>
+          <button
+            className="w-full h-[48px] border border-gray-200 text-black text-[14px] font-bold hover:bg-gray-50 transition-colors"
+            onClick={() => handleSocialLogin('google')}
+          >
+            {t('auth.googleLogin')}
+          </button>
+        </div>
 
-          {/* 휴대폰 로그인 */}
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <Input
-                type="tel"
-                placeholder={t('auth.phone')}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                disabled={isLoading}
-              />
-              <Button
-                variant="outline"
-                onClick={handleSendCode}
-                disabled={isLoading || isCodeSent}
-              >
-                {t('auth.sendCode')}
-              </Button>
-            </div>
-            {isCodeSent && (
-              <Input
-                type="text"
-                placeholder={t('auth.verificationCode')}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                disabled={isLoading}
-              />
-            )}
-            <Button
-              className="w-full"
-              onClick={handlePhoneLogin}
-              disabled={isLoading || !isCodeSent}
-            >
-              {t('auth.login')}
-            </Button>
+        {/* 구분선 */}
+        <div className="relative mb-8">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-200" />
           </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-4 text-[12px] text-gray-400">
+              {language === 'ko' ? '또는' : '或者'}
+            </span>
+          </div>
+        </div>
 
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              {language === 'ko' ? '계정이 없으신가요?' : '还没有账号？'}{' '}
-              <Link href="/register" className="text-primary hover:underline">
-                {t('auth.register')}
-              </Link>
-            </p>
-            <Link
-              href="/auth/forgot-password"
-              className="text-sm text-muted-foreground hover:text-primary hover:underline"
+        {/* 휴대폰 로그인 */}
+        <div className="space-y-2.5">
+          <div className="flex gap-2">
+            <Input
+              type="tel"
+              placeholder={t('auth.phone')}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              disabled={isLoading}
+              className="h-[48px] border-gray-200 rounded-none text-[14px] placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-black"
+            />
+            <button
+              className="shrink-0 h-[48px] px-4 border border-gray-200 text-[13px] font-bold text-black hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              onClick={handleSendCode}
+              disabled={isLoading || isCodeSent}
             >
-              {language === 'ko' ? '비밀번호를 잊으셨나요?' : '忘记密码？'}
+              {t('auth.sendCode')}
+            </button>
+          </div>
+          {isCodeSent && (
+            <Input
+              type="text"
+              placeholder={t('auth.verificationCode')}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              disabled={isLoading}
+              className="h-[48px] border-gray-200 rounded-none text-[14px] placeholder:text-gray-400 focus-visible:ring-0 focus-visible:border-black"
+            />
+          )}
+          <button
+            className="w-full h-[48px] bg-black text-white text-[14px] font-bold hover:bg-gray-900 disabled:opacity-40 transition-colors"
+            onClick={handlePhoneLogin}
+            disabled={isLoading || !isCodeSent}
+          >
+            {t('auth.login')}
+          </button>
+        </div>
+
+        {/* 하단 링크 */}
+        <div className="text-center mt-6 space-y-3">
+          <p className="text-[13px] text-gray-400">
+            {language === 'ko' ? '계정이 없으신가요?' : '还没有账号？'}{' '}
+            <Link href="/register" className="text-black font-bold hover:underline">
+              {t('auth.register')}
             </Link>
-          </div>
-        </CardContent>
-      </Card>
+          </p>
+          <Link
+            href="/auth/forgot-password"
+            className="text-[13px] text-gray-400 hover:text-black transition-colors block"
+          >
+            {language === 'ko' ? '비밀번호를 잊으셨나요?' : '忘记密码？'}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

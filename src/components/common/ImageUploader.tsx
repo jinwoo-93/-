@@ -35,42 +35,24 @@ export function ImageUploader({
 
   const uploadFile = async (file: File): Promise<UploadedImage> => {
     try {
-      // 1. Get presigned URL from our API
-      const presignedResponse = await fetch('/api/upload', {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('purpose', purpose);
+
+      const response = await fetch('/api/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-          size: file.size,
-          purpose,
-        }),
+        body: formData,
       });
 
-      const presignedResult = await presignedResponse.json();
+      const result = await response.json();
 
-      if (!presignedResult.success) {
-        throw new Error(presignedResult.error?.message || '업로드 URL 생성 실패');
-      }
-
-      const { uploadUrl, publicUrl, fileKey } = presignedResult.data;
-
-      // 2. Upload directly to S3/R2
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('파일 업로드 실패');
+      if (!result.success) {
+        throw new Error(result.error?.message || '업로드 실패');
       }
 
       return {
-        url: publicUrl,
-        key: fileKey,
+        url: result.data.url,
+        key: result.data.url,
       };
     } catch (err) {
       return {

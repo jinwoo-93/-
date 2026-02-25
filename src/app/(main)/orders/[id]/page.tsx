@@ -10,14 +10,10 @@ import {
   CheckCircle,
   AlertTriangle,
   MessageSquare,
-  Camera,
-  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { LoadingPage } from '@/components/common/LoadingSpinner';
 import { ShippingManager, PreShipPhotosViewer } from '@/components/order/ShippingManager';
 import ShippingTracker from '@/components/shipping/ShippingTracker';
@@ -39,8 +35,6 @@ export default function OrderDetailPage() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [isShipping, setIsShipping] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
@@ -65,44 +59,6 @@ export default function OrderDetailPage() {
       console.error('Failed to fetch order:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleShip = async () => {
-    if (!trackingNumber) {
-      toast({
-        title: language === 'ko' ? '운송장 번호를 입력해주세요' : '请输入物流单号',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsShipping(true);
-    try {
-      const response = await fetch(`/api/orders/${params.id}/ship`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          trackingNumber,
-          shippingCompanyId: order?.shippingCompanyId,
-          preShipPhotos: ['/images/placeholder.jpg'], // TODO: 실제 이미지 업로드
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast({ title: language === 'ko' ? '발송 처리되었습니다' : '已发货' });
-        fetchOrder();
-      } else {
-        toast({ title: data.error.message, variant: 'destructive' });
-      }
-    } catch (error) {
-      toast({
-        title: language === 'ko' ? '오류가 발생했습니다' : '发生错误',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsShipping(false);
     }
   };
 

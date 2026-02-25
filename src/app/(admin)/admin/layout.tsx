@@ -13,6 +13,8 @@ import {
   Settings,
   ChevronRight,
   Shield,
+  Ticket,
+  Truck,
 } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
@@ -22,6 +24,8 @@ const adminNavItems = [
   { href: '/admin/users', icon: Users, label: '회원 관리' },
   { href: '/admin/posts', icon: Package, label: '상품 관리' },
   { href: '/admin/orders', icon: ShoppingCart, label: '주문 관리' },
+  { href: '/admin/shipping-companies', icon: Truck, label: '배송업체 관리' },
+  { href: '/admin/coupons', icon: Ticket, label: '쿠폰 관리' },
   { href: '/admin/support', icon: Headphones, label: '고객 문의' },
   { href: '/admin/ads', icon: Megaphone, label: '광고 관리' },
   { href: '/admin/settings', icon: Settings, label: '설정' },

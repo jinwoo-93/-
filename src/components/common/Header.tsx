@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -11,14 +10,13 @@ import {
   ShoppingCart,
   Menu,
   X,
-  ChevronDown,
   User,
   Package,
   Heart,
   Clock,
   LogOut,
   Settings,
-  Shield,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,9 +30,10 @@ import {
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
-import { cn, type TradeDirection } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import LanguageSelector from './LanguageSelector';
 import { signOut } from 'next-auth/react';
+import { getSavedDirection, type TradeDirection } from './TradeDirectionModal';
 
 export function Header() {
   const router = useRouter();
@@ -44,12 +43,29 @@ export function Header() {
   const { unreadNotifications } = useUIStore();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [tradeDirection, setTradeDirection] = useState<TradeDirection>('KR_TO_CN');
+  const [tradeDirection, setTradeDirection] = useState<TradeDirection | null>(null);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // 스크롤 감지
+  // 직구/역직구 현재 선택값 읽기 + 변경 이벤트 감지
+  useEffect(() => {
+    const updateDirection = () => {
+      setTradeDirection(getSavedDirection());
+    };
+    updateDirection();
+    // page.tsx에서 모달 선택 후 dispatchEvent로 갱신
+    window.addEventListener('trade-direction-changed', updateDirection);
+    return () => window.removeEventListener('trade-direction-changed', updateDirection);
+  }, []);
+
+  const handleOpenDirectionModal = () => {
+    // sessionStorage 초기화 후 이벤트 발송 → page.tsx에서 모달 오픈
+    sessionStorage.removeItem('jikguyeokgu_popup_shown');
+    window.dispatchEvent(new Event('open-trade-direction-modal'));
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -63,280 +79,255 @@ export function Header() {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      setShowSuggestions(false);
     }
   };
 
-  // 언어에 따른 카테고리
-  const categories = language === 'ko'
+  const handleSearchInput = (value: string) => {
+    setSearchQuery(value);
+
+    if (value.trim().length > 1) {
+      // 실제 API 호출 대신 간단한 인기 키워드 표시
+      const keywords = language === 'ko'
+        ? ['패션', '뷰티', '전자기기', 'K-뷰티', 'K-패션', '식품', '건강식품']
+        : ['时尚', '美妆', '电子产品', 'K-Beauty', 'K-Fashion', '食品', '保健食品'];
+
+      const filtered = keywords.filter(k =>
+        k.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
+
+      setSearchSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const selectSuggestion = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
+  };
+
+  const navTabs = language === 'ko'
     ? [
-        { id: 'fashion', label: '패션', href: '/posts?category=fashion' },
-        { id: 'electronics', label: '전자기기', href: '/posts?category=electronics' },
-        { id: 'beauty', label: '뷰티', href: '/posts?category=beauty' },
-        { id: 'food', label: '식품', href: '/posts?category=food' },
-        { id: 'home', label: '생활', href: '/posts?category=home' },
-        { id: 'baby', label: '유아', href: '/posts?category=baby' },
+        { label: '홈', href: '/' },
+        { label: '역직구', href: '/posts?direction=KR_TO_CN' },
+        { label: '직구', href: '/posts?direction=CN_TO_KR' },
+        { label: '판매', href: '/posts/create' },
       ]
     : [
-        { id: 'kbeauty', label: 'K-Beauty', href: '/posts?category=beauty' },
-        { id: 'kfashion', label: 'K-Fashion', href: '/posts?category=fashion' },
-        { id: 'kfood', label: 'K-Food', href: '/posts?category=food' },
-        { id: 'kpop', label: 'K-Pop', href: '/posts?category=kpop' },
-        { id: 'electronics', label: '电子', href: '/posts?category=electronics' },
-        { id: 'home', label: '生活', href: '/posts?category=home' },
+        { label: '首页', href: '/' },
+        { label: '代购', href: '/posts?direction=KR_TO_CN' },
+        { label: '直购', href: '/posts?direction=CN_TO_KR' },
+        { label: '出售', href: '/posts/create' },
       ];
 
   return (
     <>
       <header
         className={cn(
-          'sticky top-0 z-50 w-full bg-white transition-shadow duration-200',
-          isScrolled && 'shadow-md'
+          'sticky top-0 z-50 w-full bg-white transition-shadow duration-150',
+          isScrolled && 'shadow-[0_1px_0_0_rgba(0,0,0,0.07)]'
         )}
       >
-        {/* 상단 바: 언어/고객센터 (데스크톱) */}
-        <div className="hidden md:block border-b bg-gray-50">
+        {/* 상단 유틸리티 바 (데스크톱) */}
+        <div className="hidden md:block border-b border-gray-100">
           <div className="container-app">
-            <div className="flex h-8 items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-4">
-                {/* 거래 방향 토글 */}
-                <button
-                  onClick={() => setTradeDirection(tradeDirection === 'KR_TO_CN' ? 'CN_TO_KR' : 'KR_TO_CN')}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200',
-                    tradeDirection === 'KR_TO_CN'
-                      ? 'bg-korea-100 text-korea-700 hover:bg-korea-200'
-                      : 'bg-china-100 text-china-700 hover:bg-china-200'
-                  )}
-                >
-                  {tradeDirection === 'KR_TO_CN' ? '🇰🇷→🇨🇳' : '🇨🇳→🇰🇷'}
-                  <span className="hidden lg:inline">
-                    {tradeDirection === 'KR_TO_CN'
-                      ? (language === 'ko' ? '한국→중국' : '韩国→中国')
-                      : (language === 'ko' ? '중국→한국' : '中国→韩国')
-                    }
-                  </span>
-                </button>
-                <span className="w-px h-3 bg-gray-300" />
-                <Link href="/seller-guide" className="hover:text-foreground transition-colors">
-                  {language === 'ko' ? '판매자 센터' : '卖家中心'}
-                </Link>
-                <Link href="/help" className="hover:text-foreground transition-colors">
-                  {language === 'ko' ? '고객센터' : '帮助中心'}
-                </Link>
-                <span className="w-px h-3 bg-gray-300" />
-                <span className="flex items-center gap-1 text-escrow-600 font-medium">
-                  <Shield className="w-3 h-3" />
-                  {language === 'ko' ? '에스크로 안전거래' : '担保安全交易'}
+            <div className="flex h-8 items-center justify-end gap-4 text-[11px] text-gray-500">
+              <LanguageSelector variant="minimal" />
+              <span className="w-px h-3 bg-gray-200" />
+              <Link href="/help" className="hover:text-black transition-colors">
+                {language === 'ko' ? '고객센터' : '帮助中心'}
+              </Link>
+              <span className="w-px h-3 bg-gray-200" />
+              <button
+                onClick={handleOpenDirectionModal}
+                className="hover:text-black transition-colors flex items-center gap-1"
+              >
+                <span>
+                  {tradeDirection === 'KR_TO_CN'
+                    ? (language === 'ko' ? '역직구' : '代购')
+                    : (language === 'ko' ? '직구' : '直购')}
                 </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <LanguageSelector variant="minimal" />
-                <span className="w-px h-3 bg-gray-300" />
-                {!session ? (
-                  <>
-                    <Link href="/login" className="hover:text-foreground font-medium transition-colors">
-                      {language === 'ko' ? '로그인' : '登录'}
-                    </Link>
-                    <span className="w-px h-3 bg-gray-300" />
-                    <Link href="/register" className="hover:text-foreground font-medium transition-colors">
-                      {language === 'ko' ? '회원가입' : '注册'}
-                    </Link>
-                  </>
-                ) : (
-                  <Link href="/mypage" className="hover:text-foreground font-medium transition-colors">
-                    {language === 'ko' ? '마이페이지' : '我的'}
+                <span className="text-[10px]">
+                  {tradeDirection === 'KR_TO_CN' ? '🇰🇷→🇨🇳' : '🇨🇳→🇰🇷'}
+                </span>
+              </button>
+              <span className="w-px h-3 bg-gray-200" />
+              {!session ? (
+                <>
+                  <Link href="/login" className="hover:text-black transition-colors">
+                    {language === 'ko' ? '로그인' : '登录'}
                   </Link>
-                )}
-              </div>
+                  <span className="w-px h-3 bg-gray-200" />
+                  <Link href="/register" className="hover:text-black transition-colors">
+                    {language === 'ko' ? '회원가입' : '注册'}
+                  </Link>
+                </>
+              ) : (
+                <Link href="/mypage" className="hover:text-black transition-colors">
+                  {language === 'ko' ? '마이페이지' : '我的'}
+                </Link>
+              )}
             </div>
           </div>
         </div>
 
         {/* 메인 헤더 */}
-        <div className="border-b">
+        <div className="border-b border-gray-100">
           <div className="container-app">
-            <div className="flex h-14 md:h-16 items-center gap-4">
-              {/* 모바일 메뉴 버튼 */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden shrink-0"
-                onClick={() => setIsMobileMenuOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-
+            <div className="flex h-[52px] items-center gap-6">
               {/* 로고 */}
-              <Link href="/" className="shrink-0 flex items-center gap-2">
-                <Image
-                  src="/images/logo.png"
-                  alt="직구역구"
-                  width={40}
-                  height={40}
-                  className="h-8 w-8 md:h-10 md:w-10"
-                />
-                <span className="hidden sm:block font-bold text-lg md:text-xl bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              <Link href="/" className="shrink-0">
+                <span className="text-[20px] font-black tracking-tight text-black">
                   직구역구
                 </span>
               </Link>
 
-              {/* 검색바 - 네이버 쇼핑 스타일 */}
+              {/* 내비게이션 탭 (데스크톱) */}
+              <nav className="hidden md:flex items-center gap-8 ml-4">
+                {navTabs.map((tab) => (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className="text-[15px] font-bold text-black hover:text-brand-orange transition-colors whitespace-nowrap"
+                  >
+                    {tab.label}
+                  </Link>
+                ))}
+              </nav>
+
+              {/* 검색바 (데스크톱) */}
               <form
                 onSubmit={handleSearch}
-                className="flex-1 max-w-xl mx-4 hidden md:block"
+                className="hidden md:flex flex-1 max-w-[400px] ml-auto relative"
               >
-                <div className={cn(
-                  "relative flex items-center rounded-full border-2 transition-all duration-200",
-                  isSearchFocused
-                    ? "border-brand-orange shadow-lg shadow-orange-100"
-                    : "border-gray-200 hover:border-brand-orange/50"
-                )}>
+                <div className="relative flex items-center w-full h-[38px] bg-gray-100 rounded-sm">
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                    placeholder={language === 'ko' ? '상품명, 브랜드, 카테고리 검색' : '搜索商品、品牌、分类'}
-                    className="flex-1 h-11 px-5 bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground"
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    onFocus={() => searchQuery.length > 1 && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    placeholder={language === 'ko' ? '상품 검색' : '搜索商品'}
+                    className="flex-1 h-full px-3 bg-transparent text-[13px] text-black placeholder:text-gray-400 focus:outline-none"
                   />
                   <button
                     type="submit"
-                    className="h-9 px-5 mr-1 rounded-full bg-brand-orange hover:bg-brand-orange/90 text-white font-medium text-sm transition-colors flex items-center gap-1.5"
+                    className="h-full px-3 flex items-center justify-center"
                   >
-                    <Search className="h-4 w-4" />
-                    <span className="hidden lg:inline">{language === 'ko' ? '검색' : '搜索'}</span>
+                    <Search className="h-[18px] w-[18px] text-gray-500" />
                   </button>
                 </div>
+
+                {/* 자동완성 드롭다운 */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 shadow-lg z-50">
+                    {searchSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => selectSuggestion(suggestion)}
+                        className="w-full px-4 py-2.5 text-left text-[13px] text-black hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      >
+                        <Search className="h-3.5 w-3.5 text-gray-400" />
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </form>
 
-              {/* 우측 아이콘들 */}
-              <div className="flex items-center gap-1 md:gap-2 shrink-0">
+              {/* 우측 아이콘 */}
+              <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
                 {/* 모바일 검색 */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden"
+                <button
+                  className="md:hidden p-1"
                   onClick={() => router.push('/search')}
                 >
-                  <Search className="h-5 w-5" />
-                </Button>
+                  <Search className="h-5 w-5 text-black" />
+                </button>
+
+                {/* 알림 */}
+                {session && (
+                  <Link href="/notifications" className="relative p-1 hidden md:block">
+                    <Bell className="h-5 w-5 text-black" />
+                    {unreadNotifications > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-orange text-white text-[10px] font-bold px-1">
+                        {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                      </span>
+                    )}
+                  </Link>
+                )}
 
                 {/* 장바구니 */}
-                <Link href="/cart">
-                  <Button variant="ghost" size="icon" className="relative">
-                    <ShoppingCart className="h-5 w-5" />
-                    {cartItems > 0 && (
-                      <span className="notification-badge">{cartItems > 99 ? '99+' : cartItems}</span>
-                    )}
-                  </Button>
+                <Link href="/cart" className="relative p-1">
+                  <ShoppingCart className="h-5 w-5 text-black" />
+                  {cartItems > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-brand-orange text-white text-[10px] font-bold px-1">
+                      {cartItems > 99 ? '99+' : cartItems}
+                    </span>
+                  )}
                 </Link>
 
-                {session ? (
-                  <>
-                    {/* 알림 */}
-                    <Link href="/notifications" className="hidden md:block">
-                      <Button variant="ghost" size="icon" className="relative">
-                        <Bell className="h-5 w-5" />
-                        {unreadNotifications > 0 && (
-                          <span className="notification-badge">
-                            {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                          </span>
-                        )}
-                      </Button>
-                    </Link>
-
-                    {/* 사용자 메뉴 (데스크톱) */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="hidden md:flex items-center gap-2 px-2">
-                          <Avatar className="h-7 w-7">
-                            <AvatarImage src={session.user?.image || ''} />
-                            <AvatarFallback className="text-xs">
-                              {session.user?.name?.charAt(0) || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem asChild>
-                          <Link href="/mypage" className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            {language === 'ko' ? '마이페이지' : '我的'}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/mypage/orders" className="flex items-center gap-2">
-                            <Package className="h-4 w-4" />
-                            {language === 'ko' ? '주문내역' : '订单'}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/mypage/wishlist" className="flex items-center gap-2">
-                            <Heart className="h-4 w-4" />
-                            {language === 'ko' ? '찜목록' : '收藏'}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/mypage/recently-viewed" className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            {language === 'ko' ? '최근 본 상품' : '最近浏览'}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href="/mypage/settings" className="flex items-center gap-2">
-                            <Settings className="h-4 w-4" />
-                            {language === 'ko' ? '설정' : '设置'}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="flex items-center gap-2 text-destructive"
-                          onClick={() => signOut({ callbackUrl: '/' })}
-                        >
-                          <LogOut className="h-4 w-4" />
-                          {language === 'ko' ? '로그아웃' : '退出'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                ) : null}
+                {/* 사용자 메뉴 (데스크톱) */}
+                {session && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="hidden md:flex items-center p-1">
+                        <Avatar className="h-7 w-7 border border-gray-200">
+                          <AvatarImage src={session.user?.image || ''} />
+                          <AvatarFallback className="text-[11px] bg-gray-100 text-gray-600 font-bold">
+                            {session.user?.name?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 rounded-none border-gray-200">
+                      <DropdownMenuItem asChild>
+                        <Link href="/mypage" className="flex items-center gap-2 text-[13px]">
+                          <User className="h-4 w-4" />
+                          {language === 'ko' ? '마이페이지' : '我的'}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/mypage/orders" className="flex items-center gap-2 text-[13px]">
+                          <Package className="h-4 w-4" />
+                          {language === 'ko' ? '주문내역' : '订单'}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/mypage/wishlist" className="flex items-center gap-2 text-[13px]">
+                          <Heart className="h-4 w-4" />
+                          {language === 'ko' ? '찜목록' : '收藏'}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/mypage/recently-viewed" className="flex items-center gap-2 text-[13px]">
+                          <Clock className="h-4 w-4" />
+                          {language === 'ko' ? '최근 본 상품' : '最近浏览'}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/mypage/settings" className="flex items-center gap-2 text-[13px]">
+                          <Settings className="h-4 w-4" />
+                          {language === 'ko' ? '설정' : '设置'}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 text-[13px] text-red-500"
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        {language === 'ko' ? '로그아웃' : '退出'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* 카테고리 바 (데스크톱) */}
-        <div className="hidden md:block border-b bg-white">
-          <div className="container-app">
-            <nav className="flex items-center gap-1 h-11 overflow-x-auto scrollbar-hide">
-              <Link
-                href="/categories"
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium hover:text-primary shrink-0"
-              >
-                <Menu className="h-4 w-4" />
-                {language === 'ko' ? '전체 카테고리' : '全部分类'}
-              </Link>
-              <span className="w-px h-4 bg-border mx-1" />
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={category.href}
-                  className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground whitespace-nowrap"
-                >
-                  {category.label}
-                </Link>
-              ))}
-              <span className="w-px h-4 bg-border mx-1" />
-              <Link
-                href="/live"
-                className="px-3 py-2 text-sm text-red-500 font-medium whitespace-nowrap flex items-center gap-1"
-              >
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                LIVE
-              </Link>
-            </nav>
           </div>
         </div>
       </header>
@@ -344,126 +335,86 @@ export function Header() {
       {/* 모바일 사이드 메뉴 */}
       {isMobileMenuOpen && (
         <>
-          {/* 오버레이 */}
           <div
-            className="fixed inset-0 bg-black/50 z-50 md:hidden"
+            className="fixed inset-0 bg-black/40 z-50 md:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          {/* 메뉴 패널 */}
-          <div className="fixed top-0 left-0 bottom-0 w-72 bg-white z-50 md:hidden animate-slide-up overflow-y-auto">
+          <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-50 md:hidden overflow-y-auto">
             {/* 헤더 */}
-            <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+            <div className="flex items-center justify-between h-[52px] px-5 border-b border-gray-100">
               {session ? (
                 <Link
                   href="/mypage"
                   className="flex items-center gap-3"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-8 w-8 border border-gray-200">
                     <AvatarImage src={session.user?.image || ''} />
-                    <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
+                    <AvatarFallback className="text-[11px] bg-gray-100 font-bold">
+                      {session.user?.name?.charAt(0) || 'U'}
+                    </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-medium">{session.user?.name || 'User'}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {language === 'ko' ? '마이페이지' : '我的'}
-                    </p>
-                  </div>
+                  <span className="text-[14px] font-bold text-black">
+                    {session.user?.name || 'User'}
+                  </span>
                 </Link>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button size="sm">{language === 'ko' ? '로그인' : '登录'}</Button>
-                  </Link>
-                  <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="outline" size="sm">
-                      {language === 'ko' ? '회원가입' : '注册'}
-                    </Button>
+                    <span className="text-[14px] font-bold text-black">
+                      {language === 'ko' ? '로그인' : '登录'}
+                    </span>
                   </Link>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
+                className="p-1"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <X className="h-5 w-5" />
-              </Button>
+                <X className="h-5 w-5 text-black" />
+              </button>
             </div>
 
-            {/* 메뉴 아이템들 */}
-            <div className="p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">
-                {language === 'ko' ? '카테고리' : '分类'}
-              </p>
-              <div className="space-y-1">
-                {categories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={category.href}
-                    className="block px-3 py-2 rounded-lg hover:bg-muted text-sm"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {category.label}
-                  </Link>
-                ))}
-              </div>
+            {/* 메뉴 */}
+            <div className="py-4">
+              {navTabs.map((tab) => (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className="block px-5 py-3 text-[15px] font-bold text-black"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {tab.label}
+                </Link>
+              ))}
             </div>
 
-            <div className="border-t p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">
-                {language === 'ko' ? '바로가기' : '快捷链接'}
-              </p>
-              <div className="space-y-1">
-                <Link
-                  href="/posts/create"
-                  className="block px-3 py-2 rounded-lg hover:bg-muted text-sm"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {language === 'ko' ? '상품 등록' : '发布商品'}
-                </Link>
-                <Link
-                  href="/live"
-                  className="block px-3 py-2 rounded-lg hover:bg-muted text-sm text-red-500"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {language === 'ko' ? '라이브 방송' : '直播'}
-                </Link>
-                <Link
-                  href="/purchase-requests"
-                  className="block px-3 py-2 rounded-lg hover:bg-muted text-sm"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {language === 'ko' ? '구매대행' : '代购'}
-                </Link>
-              </div>
+            <div className="border-t border-gray-100 py-4">
+              <Link
+                href="/purchase-requests"
+                className="block px-5 py-3 text-[14px] text-gray-700"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {language === 'ko' ? '구매대행' : '代购'}
+              </Link>
+              <Link
+                href="/help"
+                className="block px-5 py-3 text-[14px] text-gray-700"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {language === 'ko' ? '고객센터' : '帮助中心'}
+              </Link>
+              <Link
+                href="/faq"
+                className="block px-5 py-3 text-[14px] text-gray-700"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                FAQ
+              </Link>
             </div>
 
-            <div className="border-t p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">
-                {language === 'ko' ? '고객지원' : '客服'}
-              </p>
-              <div className="space-y-1">
-                <Link
-                  href="/help"
-                  className="block px-3 py-2 rounded-lg hover:bg-muted text-sm"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {language === 'ko' ? '고객센터' : '帮助中心'}
-                </Link>
-                <Link
-                  href="/faq"
-                  className="block px-3 py-2 rounded-lg hover:bg-muted text-sm"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  FAQ
-                </Link>
-              </div>
-            </div>
-
-            {/* 언어 선택 */}
-            <div className="border-t p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">
+            <div className="border-t border-gray-100 py-4 px-5">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">
                 {language === 'ko' ? '언어' : '语言'}
               </p>
               <LanguageSelector variant="full" />

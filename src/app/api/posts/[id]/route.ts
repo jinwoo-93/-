@@ -34,6 +34,17 @@ export async function GET(
             slug: true,
           },
         },
+        shippingCompany: {
+          select: {
+            id: true,
+            name: true,
+            nameZh: true,
+            logo: true,
+            averageRating: true,
+            onTimeRate: true,
+            hasExcellentBadge: true,
+          },
+        },
       },
     });
 

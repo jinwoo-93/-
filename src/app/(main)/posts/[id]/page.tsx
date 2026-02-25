@@ -6,8 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ShoppingCart,
-  Heart,
-  Share2,
   MessageSquare,
   Star,
   Shield,
@@ -16,9 +14,6 @@ import {
   Eye,
   ShoppingBag,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoadingPage } from '@/components/common/LoadingSpinner';
 import WishlistButton from '@/components/product/WishlistButton';
@@ -27,6 +22,7 @@ import FollowButton from '@/components/user/FollowButton';
 import CustomsCalculator from '@/components/common/CustomsCalculator';
 import ProductQA from '@/components/product/ProductQA';
 import ProductRecommendations from '@/components/product/ProductRecommendations';
+import ShippingInfo from '@/components/product/ShippingInfo';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useCartStore } from '@/stores/cartStore';
@@ -60,7 +56,6 @@ export default function PostDetailPage() {
 
       if (data.success) {
         setPost(data.data);
-        // 최근 본 상품에 추가
         addToRecentlyViewed({
           id: data.data.id,
           title: data.data.title,
@@ -105,8 +100,8 @@ export default function PostDetailPage() {
     <div className="container-app py-6">
       <div className="grid md:grid-cols-2 gap-8">
         {/* 이미지 갤러리 */}
-        <div className="space-y-4">
-          <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
+        <div className="space-y-3">
+          <div className="relative aspect-square bg-gray-50 overflow-hidden">
             {post.images.length > 0 ? (
               <Image
                 src={post.images[currentImageIndex]}
@@ -116,16 +111,14 @@ export default function PostDetailPage() {
               />
             ) : (
               <div className="flex items-center justify-center h-full">
-                <ShoppingBag className="h-24 w-24 text-muted-foreground" />
+                <ShoppingBag className="h-24 w-24 text-gray-300" />
               </div>
             )}
 
             {post.images.length > 1 && (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80"
+                <button
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 flex items-center justify-center hover:bg-white transition-colors"
                   onClick={() =>
                     setCurrentImageIndex((prev) =>
                       prev === 0 ? post.images.length - 1 : prev - 1
@@ -133,11 +126,9 @@ export default function PostDetailPage() {
                   }
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80"
+                </button>
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 flex items-center justify-center hover:bg-white transition-colors"
                   onClick={() =>
                     setCurrentImageIndex((prev) =>
                       prev === post.images.length - 1 ? 0 : prev + 1
@@ -145,30 +136,28 @@ export default function PostDetailPage() {
                   }
                 >
                   <ChevronRight className="h-4 w-4" />
-                </Button>
+                </button>
               </>
             )}
 
-            <Badge
-              variant={post.tradeDirection === 'KR_TO_CN' ? 'korea' : 'china'}
-              className="absolute top-4 left-4"
-            >
-              {post.tradeDirection === 'KR_TO_CN' ? '🇰🇷→🇨🇳' : '🇨🇳→🇰🇷'}
-            </Badge>
+            <div className="absolute top-3 left-3">
+              <span className="px-2 py-1 text-[11px] font-bold text-white bg-black">
+                {post.tradeDirection === 'KR_TO_CN' ? 'KR → CN' : 'CN → KR'}
+              </span>
+            </div>
           </div>
 
-          {/* 썸네일 */}
           {post.images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
               {post.images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 ${
+                  className={`relative w-[60px] h-[60px] overflow-hidden flex-shrink-0 border-2 ${
                     currentImageIndex === index
-                      ? 'ring-2 ring-primary'
-                      : 'opacity-70'
-                  }`}
+                      ? 'border-black'
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  } transition-all`}
                 >
                   <Image
                     src={image}
@@ -183,82 +172,76 @@ export default function PostDetailPage() {
         </div>
 
         {/* 상품 정보 */}
-        <div className="space-y-6">
-          {/* 카테고리 */}
+        <div className="space-y-5">
           {post.category && (
             <Link href={`/posts?category=${post.category.slug}`}>
-              <Badge variant="secondary">
+              <span className="text-[12px] font-bold text-gray-400 hover:text-black transition-colors">
                 {language === 'ko' ? post.category.nameKo : post.category.nameZh}
-              </Badge>
+              </span>
             </Link>
           )}
 
-          {/* 제목 */}
-          <h1 className="text-2xl font-bold">{title}</h1>
+          <h1 className="text-[20px] font-black text-black leading-tight">{title}</h1>
 
-          {/* 가격 */}
-          <div className="text-3xl font-bold text-primary">
+          <div className="text-[28px] font-black text-black">
             {format(post.priceKRW, post.priceCNY)}
           </div>
 
-          {/* 통계 */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-[12px] text-gray-400">
             <span className="flex items-center gap-1">
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3.5 w-3.5" />
               {post.viewCount}
             </span>
             <span className="flex items-center gap-1">
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-3.5 w-3.5" />
               {post.salesCount} {language === 'ko' ? '판매' : '销量'}
             </span>
             <span>{formatRelativeTime(post.createdAt, language)}</span>
           </div>
 
-          {/* 수량 선택 */}
+          <div className="border-t border-gray-100" />
+
+          {/* 수량 */}
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium">{t('post.quantity')}</span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
+            <span className="text-[13px] font-bold text-black">{t('post.quantity')}</span>
+            <div className="flex items-center">
+              <button
+                className="w-8 h-8 border border-gray-200 flex items-center justify-center text-[14px] hover:border-black transition-colors"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
               >
                 -
-              </Button>
-              <span className="w-12 text-center">{quantity}</span>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() =>
-                  setQuantity(Math.min(post.quantity, quantity + 1))
-                }
+              </button>
+              <span className="w-10 h-8 border-y border-gray-200 flex items-center justify-center text-[13px] font-bold">
+                {quantity}
+              </span>
+              <button
+                className="w-8 h-8 border border-gray-200 flex items-center justify-center text-[14px] hover:border-black transition-colors"
+                onClick={() => setQuantity(Math.min(post.quantity, quantity + 1))}
               >
                 +
-              </Button>
-              <span className="text-sm text-muted-foreground">
+              </button>
+              <span className="ml-3 text-[12px] text-gray-400">
                 ({post.quantity} {language === 'ko' ? '개 남음' : '件剩余'})
               </span>
             </div>
           </div>
 
           {/* 구매 버튼 */}
-          <div className="flex gap-3">
-            <Button
-              size="lg"
-              className="flex-1"
+          <div className="flex gap-2">
+            <button
+              className="flex-1 h-[52px] bg-black text-white text-[15px] font-bold hover:bg-gray-900 disabled:opacity-40 transition-colors"
               onClick={handleBuyNow}
               disabled={post.status !== 'ACTIVE'}
             >
               {t('post.buyNow')}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
+            </button>
+            <button
+              className="w-[52px] h-[52px] border border-gray-200 flex items-center justify-center hover:border-black transition-colors"
               onClick={handleAddToCart}
               disabled={post.status !== 'ACTIVE'}
             >
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
+              <ShoppingCart className="h-5 w-5 text-black" />
+            </button>
             <WishlistButton
               postId={post.id}
               size="lg"
@@ -272,26 +255,40 @@ export default function PostDetailPage() {
             />
           </div>
 
-          {/* 에스크로 안내 */}
-          <Card className="bg-muted/50">
-            <CardContent className="py-4">
-              <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-green-600 mt-0.5" />
-                <div>
-                  <p className="font-medium text-sm">
-                    {language === 'ko' ? '안전 결제' : '安全支付'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {language === 'ko'
-                      ? '결제 금액은 에스크로로 안전하게 보관되며, 구매 확정 후 판매자에게 정산됩니다.'
-                      : '付款金额将安全托管，确认收货后结算给卖家。'}
-                  </p>
-                </div>
+          {/* 에스크로 */}
+          <div className="border border-gray-200 p-4">
+            <div className="flex items-start gap-3">
+              <Shield className="h-5 w-5 text-escrow-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-[13px] font-bold text-black">
+                  {language === 'ko' ? '에스크로 안전 결제' : '担保安全支付'}
+                </p>
+                <p className="text-[12px] text-gray-500 mt-0.5">
+                  {language === 'ko'
+                    ? '결제 금액은 에스크로로 안전하게 보관되며, 구매 확정 후 판매자에게 정산됩니다.'
+                    : '付款金额将安全托管，确认收货后结算给卖家。'}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* 관부가세 계산기 (중국→한국만 표시) */}
+          {/* 배송 정보 */}
+          {post.postType === 'SELL' && (post as any).shippingCompany && (
+            <div className="border border-gray-200 p-4">
+              <h3 className="text-[13px] font-bold text-black mb-3">
+                {language === 'ko' ? '배송 정보' : '配送信息'}
+              </h3>
+              <ShippingInfo
+                shippingCompany={(post as any).shippingCompany}
+                shippingFeeType={(post as any).shippingFeeType}
+                shippingFeeAmount={(post as any).shippingFeeAmount}
+                freeShippingThreshold={(post as any).freeShippingThreshold}
+                language={language}
+              />
+            </div>
+          )}
+
+          {/* 관부가세 */}
           {post.tradeDirection === 'CN_TO_KR' && (
             <CustomsCalculator
               productPriceKRW={post.priceKRW * quantity}
@@ -300,100 +297,87 @@ export default function PostDetailPage() {
             />
           )}
 
-          {/* 판매자 정보 */}
+          {/* 판매자 */}
           {post.user && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">{t('post.seller')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={post.user.profileImage || ''} />
-                    <AvatarFallback>
-                      {post.user.nickname?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{post.user.nickname}</span>
-                      {post.user.hasExcellentBadge && (
-                        <Badge variant="excellent" className="text-xs">
-                          {language === 'ko' ? '우수' : '优秀'}
-                        </Badge>
-                      )}
-                      {post.user.isBusinessVerified && (
-                        <Badge variant="business" className="text-xs">
-                          {language === 'ko' ? '사업자' : '企业'}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        {post.user.averageRating?.toFixed(1) || '0.0'}
+            <div className="border border-gray-200 p-4">
+              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                {t('post.seller')}
+              </p>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-11 w-11 border border-gray-200">
+                  <AvatarImage src={post.user.profileImage || ''} />
+                  <AvatarFallback className="text-[13px] font-bold bg-gray-100">
+                    {post.user.nickname?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-bold text-black">{post.user.nickname}</span>
+                    {post.user.hasExcellentBadge && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-black text-white font-bold">
+                        {language === 'ko' ? '우수' : '优秀'}
                       </span>
-                      <span>
-                        {post.user.totalSales} {language === 'ko' ? '거래' : '交易'}
+                    )}
+                    {post.user.isBusinessVerified && (
+                      <span className="text-[10px] px-1.5 py-0.5 border border-gray-300 text-gray-600 font-bold">
+                        {language === 'ko' ? '사업자' : '企业'}
                       </span>
-                    </div>
+                    )}
                   </div>
-                  <div className="flex gap-2">
-                    <FollowButton
-                      userId={post.user.id}
-                      size="sm"
-                    />
-                    <Link href={`/messages/${post.user.id}`}>
-                      <Button variant="outline" size="sm">
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        {t('post.contact')}
-                      </Button>
-                    </Link>
+                  <div className="flex items-center gap-3 text-[12px] text-gray-400 mt-0.5">
+                    <span className="flex items-center gap-0.5">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      {post.user.averageRating?.toFixed(1) || '0.0'}
+                    </span>
+                    <span>
+                      {post.user.totalSales} {language === 'ko' ? '거래' : '交易'}
+                    </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex gap-2">
+                  <FollowButton userId={post.user.id} size="sm" />
+                  <Link href={`/messages/${post.user.id}`}>
+                    <button className="h-8 px-3 border border-gray-200 text-[12px] font-bold text-black flex items-center gap-1 hover:border-black transition-colors">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      {t('post.contact')}
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
       {/* 상품 설명 */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>{language === 'ko' ? '상품 설명' : '商品描述'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-            {description}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mt-10 border-t border-gray-200 pt-8">
+        <h2 className="text-[16px] font-black text-black mb-4">
+          {language === 'ko' ? '상품 설명' : '商品描述'}
+        </h2>
+        <div className="prose prose-sm max-w-none whitespace-pre-wrap text-[14px] text-gray-700 leading-relaxed">
+          {description}
+        </div>
+      </div>
 
-      {/* 상품 Q&A */}
-      <div className="mt-8">
+      {/* Q&A */}
+      <div className="mt-10 border-t border-gray-200 pt-8">
         <ProductQA
           postId={post.id}
           sellerId={post.user?.id || ''}
         />
       </div>
 
-      {/* 비슷한 상품 추천 */}
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              {language === 'ko' ? '비슷한 상품' : '相似商品'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProductRecommendations
-              type="similar"
-              postId={post.id}
-              limit={4}
-              showTitle={false}
-            />
-          </CardContent>
-        </Card>
+      {/* 비슷한 상품 */}
+      <div className="mt-10 border-t border-gray-200 pt-8">
+        <h2 className="text-[16px] font-black text-black mb-4">
+          {language === 'ko' ? '비슷한 상품' : '相似商品'}
+        </h2>
+        <ProductRecommendations
+          type="similar"
+          postId={post.id}
+          limit={4}
+          showTitle={false}
+        />
       </div>
     </div>
   );
