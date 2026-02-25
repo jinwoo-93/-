@@ -22,7 +22,12 @@ export function formatPrice(price: number, currency: 'KRW' | 'CNY' = 'KRW'): str
 // 날짜 포맷팅
 export function formatDate(date: Date | string, locale: 'ko' | 'zh' = 'ko'): string {
   const d = new Date(date);
-  return new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'zh-CN', {
+  const localeMap = {
+    ko: 'ko-KR',
+    zh: 'zh-CN',
+    en: 'en-US',
+  };
+  return new Intl.DateTimeFormat(localeMap[locale], {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -40,14 +45,15 @@ export function formatRelativeTime(date: Date | string, locale: 'ko' | 'zh' = 'k
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
+  if (days > 7) return formatDate(date, locale);
+
   if (locale === 'ko') {
-    if (days > 7) return formatDate(date, locale);
     if (days > 0) return `${days}일 전`;
     if (hours > 0) return `${hours}시간 전`;
     if (minutes > 0) return `${minutes}분 전`;
     return '방금 전';
   } else {
-    if (days > 7) return formatDate(date, locale);
+    // Chinese
     if (days > 0) return `${days}天前`;
     if (hours > 0) return `${hours}小时前`;
     if (minutes > 0) return `${minutes}分钟前`;

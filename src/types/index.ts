@@ -1,6 +1,6 @@
 // 타입 정의
 
-export type Language = 'ko' | 'zh';
+export type Language = 'ko' | 'zh'; // 영어는 Phase 5에서 완전 통합 예정
 export type Currency = 'KRW' | 'CNY';
 export type Country = 'KR' | 'CN';
 

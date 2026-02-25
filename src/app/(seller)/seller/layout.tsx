@@ -12,12 +12,14 @@ import {
   Settings,
   ChevronRight,
   Store,
+  Zap,
 } from 'lucide-react';
 
 const sellerNavItems = [
   { href: '/seller/dashboard', icon: LayoutDashboard, label: '대시보드' },
   { href: '/seller/products', icon: Package, label: '상품 관리' },
   { href: '/seller/orders', icon: ShoppingCart, label: '주문 관리' },
+  { href: '/seller/promotions', icon: Zap, label: '프로모션' },
   { href: '/seller/settlements', icon: DollarSign, label: '정산 관리' },
   { href: '/seller/statistics', icon: BarChart3, label: '통계' },
   { href: '/seller/settings', icon: Settings, label: '설정' },

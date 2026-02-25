@@ -21,8 +21,8 @@ interface LanguageOption {
 const languages: LanguageOption[] = [
   { code: 'ko', label: '한국어', flag: '🇰🇷' },
   { code: 'zh', label: '中文', flag: '🇨🇳' },
+  // { code: 'en', label: 'English', flag: '🇬🇧' }, // Phase 5에서 활성화
   // 추후 지원 예정
-  // { code: 'en', label: 'English', flag: '🇺🇸' },
   // { code: 'ja', label: '日本語', flag: '🇯🇵' },
 ];
 
@@ -40,9 +40,27 @@ export default function LanguageSelector({
 
   const currentLang = languages.find((l) => l.code === language) || languages[0];
 
-  const handleSelect = (code: Language) => {
+  const handleSelect = async (code: Language) => {
+    if (code === language) {
+      setOpen(false);
+      return;
+    }
+
+    // 언어 변경
     setLanguage(code);
     setOpen(false);
+
+    // 서버에 저장 (로그인한 경우)
+    try {
+      await fetch('/api/users/me/language', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: code }),
+      });
+    } catch (error) {
+      // 로그인하지 않았거나 에러 발생 시 로컬 스토리지만 업데이트
+      console.log('Language saved to localStorage only');
+    }
   };
 
   if (variant === 'minimal') {

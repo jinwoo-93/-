@@ -1,7 +1,7 @@
 import ko from './ko.json';
 import zh from './zh.json';
 
-export type Language = 'ko' | 'zh';
+export type Language = 'ko' | 'zh'; // 영어는 Phase 5에서 완전 통합 예정
 
 export const languages: Record<Language, typeof ko> = {
   ko,
