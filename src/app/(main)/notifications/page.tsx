@@ -27,7 +27,7 @@ import { LoadingPage } from '@/components/common/LoadingSpinner';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDate } from '@/lib/utils';
-import { t } from '@/lib/i18n';
+import { translate as t } from '@/lib/i18n';
 
 interface Notification {
   id: string;
@@ -233,10 +233,10 @@ export default function NotificationsPage() {
         <div className="flex items-center gap-3">
           <Bell className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">
-            {t(language, 'notification', 'notifications')}
+            {t('notification', 'notifications', language)}
             {unreadCount > 0 && (
               <span className="ml-2 text-base font-normal text-muted-foreground">
-                ({unreadCount} {t(language, 'notification', 'unread')})
+                ({unreadCount} {t('notification', 'unread', language)})
               </span>
             )}
           </h1>
@@ -248,12 +248,12 @@ export default function NotificationsPage() {
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4 mr-1" />
-            {t(language, 'common', 'filter')}
+            {t('common', 'filter', language)}
           </Button>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={markAllAsRead}>
               <Check className="h-4 w-4 mr-1" />
-              {t(language, 'notification', 'markAllRead')}
+              {t('notification', 'markAllRead', language)}
             </Button>
           )}
         </div>
@@ -265,7 +265,7 @@ export default function NotificationsPage() {
           <CardContent className="py-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium">
-                {t(language, 'common', 'category')}
+                {t('common', 'category', language)}
               </p>
               <Button
                 variant="ghost"
@@ -308,10 +308,10 @@ export default function NotificationsPage() {
       {filteredNotifications.length > 0 && (
         <div className="flex items-center justify-between mb-4 px-1">
           <p className="text-sm text-muted-foreground">
-            {t(language, 'common', 'total')} {filteredNotifications.length}
-            {t(language, 'common', 'count')} •{' '}
-            {t(language, 'notification', 'unread')} {unreadCount}
-            {t(language, 'common', 'count')}
+            {t('common', 'total', language)} {filteredNotifications.length}
+            {t('common', 'count', language)} •{' '}
+            {t('notification', 'unread', language)} {unreadCount}
+            {t('common', 'count', language)}
           </p>
           {readCount > 0 && (
             <Button
@@ -321,7 +321,7 @@ export default function NotificationsPage() {
               onClick={deleteAllRead}
             >
               <Trash2 className="h-4 w-4 mr-1" />
-              {t(language, 'notification', 'deleteRead')}
+              {t('notification', 'deleteRead', language)}
             </Button>
           )}
         </div>
@@ -333,15 +333,15 @@ export default function NotificationsPage() {
           <CardContent className="py-12 text-center">
             <Bell className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
             <p className="text-lg font-medium mb-1">
-              {t(language, 'notification', 'noNotifications')}
+              {t('notification', 'noNotifications', language)}
             </p>
             <p className="text-sm text-muted-foreground">
               {filter === 'all'
-                ? t(language, 'notification', 'noNotificationsDesc')
+                ? t('notification', 'noNotificationsDesc', language)
                 : `${getCategoryName(filter)} ${t(
-                    language,
                     'notification',
-                    'categoryEmpty'
+                    'categoryEmpty',
+                    language
                   )}`}
             </p>
           </CardContent>
@@ -386,7 +386,7 @@ export default function NotificationsPage() {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => markAsRead(notification.id)}
-                            title={t(language, 'notification', 'markRead')}
+                            title={t('notification', 'markRead', language)}
                           >
                             <Check className="h-4 w-4" />
                           </Button>
@@ -396,7 +396,7 @@ export default function NotificationsPage() {
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           onClick={() => deleteNotification(notification.id)}
-                          title={t(language, 'common', 'delete')}
+                          title={t('common', 'delete', language)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -415,7 +415,7 @@ export default function NotificationsPage() {
                           className="text-sm text-primary hover:underline font-medium flex items-center gap-1"
                           onClick={() => markAsRead(notification.id)}
                         >
-                          {t(language, 'common', 'viewDetails')}
+                          {t('common', 'viewDetails', language)}
                           <span className="text-xs">→</span>
                         </Link>
                       )}

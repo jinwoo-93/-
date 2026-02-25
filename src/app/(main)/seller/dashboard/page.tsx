@@ -16,6 +16,9 @@ import {
   ChevronRight,
   BarChart3,
   Calendar,
+  Award,
+  Gift,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +29,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCurrency } from '@/hooks/useCurrency';
 import { formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { translate as t } from '@/lib/i18n';
+import type { SellerGrade } from '@prisma/client';
 
 interface DashboardStats {
   totalSales: number;
@@ -40,6 +45,24 @@ interface DashboardStats {
   shippingOrders: number;
   completedOrders: number;
   disputeRate: number;
+}
+
+interface SellerGradeInfo {
+  currentGrade: SellerGrade;
+  currentScore: number;
+  nextGrade: SellerGrade | null;
+  nextGradeRequirements: {
+    minSales: number;
+    minRevenue: number;
+    minRating: number;
+    maxDisputeRate: number;
+  } | null;
+  progress: number;
+  benefits: {
+    commissionDiscount: number;
+    priorityDisplay: boolean;
+    promotionTools: boolean;
+  };
 }
 
 interface RecentOrder {
@@ -77,6 +100,7 @@ export default function SellerDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [gradeInfo, setGradeInfo] = useState<SellerGradeInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d'>('30d');
 
@@ -93,21 +117,24 @@ export default function SellerDashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [statsRes, ordersRes, productsRes] = await Promise.all([
+      const [statsRes, ordersRes, productsRes, gradeRes] = await Promise.all([
         fetch(`/api/seller/stats?range=${dateRange}`),
         fetch('/api/seller/orders/recent?limit=5'),
         fetch('/api/seller/products/top?limit=5'),
+        fetch('/api/seller/grade'),
       ]);
 
-      const [statsData, ordersData, productsData] = await Promise.all([
+      const [statsData, ordersData, productsData, gradeData] = await Promise.all([
         statsRes.json(),
         ordersRes.json(),
         productsRes.json(),
+        gradeRes.json(),
       ]);
 
       if (statsData.success) setStats(statsData.data);
       if (ordersData.success) setRecentOrders(ordersData.data);
       if (productsData.success) setTopProducts(productsData.data);
+      if (gradeData.success) setGradeInfo(gradeData.data);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
@@ -116,6 +143,17 @@ export default function SellerDashboardPage() {
   };
 
   if (authLoading || isLoading) return <LoadingPage />;
+
+  const getGradeBadge = (grade: SellerGrade) => {
+    const config = {
+      BRONZE: { icon: '🥉', color: 'bg-amber-100 text-amber-800 border-amber-300', name: { ko: '브론즈', zh: '青铜', en: 'Bronze' } },
+      SILVER: { icon: '🥈', color: 'bg-gray-100 text-gray-800 border-gray-300', name: { ko: '실버', zh: '白银', en: 'Silver' } },
+      GOLD: { icon: '🥇', color: 'bg-yellow-100 text-yellow-800 border-yellow-300', name: { ko: '골드', zh: '黄金', en: 'Gold' } },
+      PLATINUM: { icon: '💎', color: 'bg-cyan-100 text-cyan-800 border-cyan-300', name: { ko: '플래티넘', zh: '铂金', en: 'Platinum' } },
+      DIAMOND: { icon: '💎💎', color: 'bg-purple-100 text-purple-800 border-purple-300', name: { ko: '다이아몬드', zh: '钻石', en: 'Diamond' } },
+    };
+    return config[grade];
+  };
 
   const orderStatusColor: Record<string, string> = {
     PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
@@ -175,6 +213,110 @@ export default function SellerDashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* 판매자 등급 카드 */}
+      {gradeInfo && (
+        <Card className="mb-6 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white rounded-xl shadow-sm">
+                  <Award className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {t('seller', 'currentGrade', language)}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-lg font-bold px-3 py-1',
+                        getGradeBadge(gradeInfo.currentGrade).color
+                      )}
+                    >
+                      {getGradeBadge(gradeInfo.currentGrade).icon}{' '}
+                      {getGradeBadge(gradeInfo.currentGrade).name[language]}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      ({gradeInfo.currentScore.toFixed(1)} {t('seller', 'points', language)})
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground mb-1">
+                  {t('seller', 'benefits', language)}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1">
+                    <Zap className="h-3 w-3" />
+                    {gradeInfo.benefits.commissionDiscount}% {t('seller', 'discount', language)}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {gradeInfo.nextGrade && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">
+                    {t('seller', 'nextGrade', language)}:{' '}
+                    {getGradeBadge(gradeInfo.nextGrade).icon}{' '}
+                    {getGradeBadge(gradeInfo.nextGrade).name[language]}
+                  </p>
+                  <p className="text-sm font-medium text-primary">
+                    {gradeInfo.progress.toFixed(0)}%
+                  </p>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3">
+                  <div
+                    className="bg-primary h-2.5 rounded-full transition-all"
+                    style={{ width: `${Math.min(gradeInfo.progress, 100)}%` }}
+                  ></div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                  <div className="bg-white/50 rounded-lg p-2">
+                    <p className="text-muted-foreground text-xs">
+                      {t('seller', 'salesCount', language)}
+                    </p>
+                    <p className="font-medium">
+                      {stats?.totalSales || 0} / {gradeInfo.nextGradeRequirements?.minSales}
+                    </p>
+                  </div>
+                  <div className="bg-white/50 rounded-lg p-2">
+                    <p className="text-muted-foreground text-xs">
+                      {t('seller', 'revenue', language)}
+                    </p>
+                    <p className="font-medium">
+                      ₩{((stats?.totalRevenueKRW || 0) / 10000).toFixed(0)}만 /{' '}
+                      ₩{(gradeInfo.nextGradeRequirements?.minRevenue || 0) / 10000}만
+                    </p>
+                  </div>
+                  <div className="bg-white/50 rounded-lg p-2">
+                    <p className="text-muted-foreground text-xs">
+                      {t('seller', 'rating', language)}
+                    </p>
+                    <p className="font-medium">
+                      {stats?.averageRating?.toFixed(1) || '0.0'} /{' '}
+                      {gradeInfo.nextGradeRequirements?.minRating}
+                    </p>
+                  </div>
+                  <div className="bg-white/50 rounded-lg p-2">
+                    <p className="text-muted-foreground text-xs">
+                      {t('seller', 'disputeRate', language)}
+                    </p>
+                    <p className="font-medium">
+                      {stats?.disputeRate?.toFixed(1) || '0.0'}% /{' '}
+                      {gradeInfo.nextGradeRequirements?.maxDisputeRate}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
