@@ -2,6 +2,11 @@
 
 import { useEffect } from 'react';
 
+/**
+ * Global Error Page
+ * 루트 레이아웃에서 발생하는 에러를 처리합니다.
+ * 이 페이지는 <html> 태그를 직접 포함해야 합니다.
+ */
 export default function GlobalError({
   error,
   reset,
@@ -11,6 +16,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error('Global error:', error);
+    // TODO: Phase 6에서 Sentry로 전송
   }, [error]);
 
   return (
@@ -22,71 +28,162 @@ export default function GlobalError({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#f8fafc',
+            background: 'linear-gradient(to bottom right, #fee2e2, #fed7aa)',
             padding: '1rem',
           }}
         >
-          <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+          <div style={{ maxWidth: '42rem', width: '100%' }}>
             <div
               style={{
-                width: '64px',
-                height: '64px',
-                margin: '0 auto 24px',
-                borderRadius: '50%',
-                backgroundColor: '#fee2e2',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                background: 'white',
+                borderRadius: '1rem',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                padding: '3rem 2rem',
               }}
             >
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#dc2626"
-                strokeWidth="2"
+              {/* 에러 아이콘 */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginBottom: '1.5rem',
+                }}
               >
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
+                <div
+                  style={{
+                    width: '5rem',
+                    height: '5rem',
+                    background: '#fee2e2',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#dc2626"
+                    strokeWidth="2"
+                  >
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 메시지 */}
+              <h1
+                style={{
+                  fontSize: '2rem',
+                  fontWeight: 'bold',
+                  color: '#111827',
+                  textAlign: 'center',
+                  marginBottom: '1rem',
+                }}
+              >
+                시스템 오류
+              </h1>
+              <p
+                style={{
+                  fontSize: '1.125rem',
+                  color: '#4b5563',
+                  textAlign: 'center',
+                  marginBottom: '2rem',
+                  maxWidth: '28rem',
+                  margin: '0 auto 2rem',
+                }}
+              >
+                심각한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+              </p>
+
+              {/* 에러 메시지 (개발 환경) */}
+              {process.env.NODE_ENV === 'development' && (
+                <div
+                  style={{
+                    marginBottom: '2rem',
+                    background: '#fee2e2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '0.5rem',
+                    padding: '1rem',
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: '#7f1d1d',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    에러 정보 (개발 환경):
+                  </p>
+                  <p
+                    style={{
+                      fontSize: '0.875rem',
+                      color: '#991b1b',
+                      fontFamily: 'monospace',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {error.message}
+                  </p>
+                  {error.digest && (
+                    <p style={{ fontSize: '0.75rem', color: '#dc2626', marginTop: '0.5rem' }}>
+                      Error ID: {error.digest}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 액션 버튼 */}
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button
+                  onClick={reset}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: '#2563eb',
+                    color: 'white',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  다시 시도
+                </button>
+                <button
+                  onClick={() => (window.location.href = '/')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: 'white',
+                    color: '#374151',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  홈으로 이동
+                </button>
+              </div>
             </div>
-            <h1
-              style={{
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                color: '#1e293b',
-                marginBottom: '8px',
-              }}
-            >
-              심각한 오류가 발생했습니다
-            </h1>
-            <p
-              style={{
-                color: '#64748b',
-                marginBottom: '24px',
-              }}
-            >
-              애플리케이션에 문제가 발생했습니다.
-              <br />
-              페이지를 새로고침해주세요.
-            </p>
-            <button
-              onClick={reset}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: '#1e3a8a',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}
-            >
-              다시 시도
-            </button>
+
+            {/* 추가 정보 */}
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                문제가 계속되면{' '}
+                <a href="/help/contact" style={{ color: '#2563eb', textDecoration: 'underline' }}>
+                  고객센터
+                </a>
+                로 문의해주세요.
+              </p>
+            </div>
           </div>
         </div>
       </body>
