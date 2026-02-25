@@ -59,6 +59,11 @@ jest.mock('next/navigation', () => ({
 // Mock fetch
 global.fetch = jest.fn()
 
+// setImmediate polyfill for Pino
+if (typeof global.setImmediate === 'undefined') {
+  global.setImmediate = (fn, ...args) => setTimeout(fn, 0, ...args)
+}
+
 // Console 경고 억제 (필요시)
 const originalError = console.error
 beforeAll(() => {
