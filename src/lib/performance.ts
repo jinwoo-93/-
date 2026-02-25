@@ -177,14 +177,14 @@ export function withPerformanceMonitoring<P extends object>(
   componentName: string
 ): React.ComponentType<P> {
   const PerformanceWrappedComponent: React.FC<P> = (props) => {
-    if (process.env.NODE_ENV === 'development') {
-      const startTime = performance.now();
+    const startTime = React.useMemo(() => performance.now(), []);
 
-      React.useEffect(() => {
+    React.useEffect(() => {
+      if (process.env.NODE_ENV === 'development') {
         const renderTime = performance.now() - startTime;
         console.log(`[Render] ${componentName}: ${renderTime.toFixed(2)}ms`);
-      }, []);
-    }
+      }
+    }, [startTime]);
 
     return React.createElement(WrappedComponent, props);
   };

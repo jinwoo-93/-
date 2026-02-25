@@ -272,7 +272,7 @@ function SearchContent() {
             {result && (
               <p className="text-gray-600">
                 {filters.query && (
-                  <span className="font-medium text-gray-900">"{filters.query}"</span>
+                  <span className="font-medium text-gray-900">&ldquo;{filters.query}&rdquo;</span>
                 )}{' '}
                 {language === 'ko'
                   ? `검색 결과 ${result.pagination.total.toLocaleString()}개`
