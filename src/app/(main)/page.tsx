@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Shield, Truck, Users, CreditCard, AlertTriangle, Ban, Receipt, Info, RefreshCw } from 'lucide-react';
+import { ArrowRight, Shield, Truck, Users, CreditCard, AlertTriangle, Ban, Receipt, Info, RefreshCw, Scale } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { HeroBanner } from '@/components/home/HeroBanner';
 import LiveStreamList from '@/components/live/LiveStreamList';
@@ -10,6 +10,7 @@ import PurchaseRequestList from '@/components/purchase/PurchaseRequestList';
 import ProductRecommendations from '@/components/product/ProductRecommendations';
 import FloatingExchangeCalculator from '@/components/common/FloatingExchangeCalculator';
 import { TradeDirectionModal, getSavedDirection, type TradeDirection } from '@/components/common/TradeDirectionModal';
+import { ActiveDisputesList } from '@/components/dispute/ActiveDisputesList';
 
 const features = [
   {
@@ -173,6 +174,24 @@ export default function HomePage() {
             </Link>
           </div>
           <ProductRecommendations limit={8} showTitle={false} />
+        </section>
+
+        {/* 분쟁 조정 */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[18px] font-black text-black flex items-center gap-2">
+              <Scale className="h-5 w-5" />
+              {language === 'ko' ? '분쟁 조정' : '纠纷调解'}
+            </h2>
+            <Link
+              href="/disputes"
+              className="text-[13px] text-gray-400 hover:text-black transition-colors flex items-center gap-1"
+            >
+              {language === 'ko' ? '전체보기' : '查看全部'}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <ActiveDisputesList limit={4} />
         </section>
 
         {/* 구매대행 */}

@@ -111,13 +111,13 @@ export function Header() {
 
   const navTabs = language === 'ko'
     ? [
-        { label: '홈', href: '/' },
+        { label: '소개', href: '/about' },
         { label: '역직구', href: '/posts?direction=KR_TO_CN' },
         { label: '직구', href: '/posts?direction=CN_TO_KR' },
         { label: '판매', href: '/posts/create' },
       ]
     : [
-        { label: '首页', href: '/' },
+        { label: '关于', href: '/about' },
         { label: '代购', href: '/posts?direction=KR_TO_CN' },
         { label: '直购', href: '/posts?direction=CN_TO_KR' },
         { label: '出售', href: '/posts/create' },
