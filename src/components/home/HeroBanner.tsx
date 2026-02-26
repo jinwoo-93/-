@@ -10,6 +10,7 @@ interface BannerSlide {
   id: number;
   bg: string;
   bgImage?: string; // 배경 이미지 URL (선택)
+  splitImages?: { left: string; right: string }; // 좌우 분할 이미지 (선택)
   titleKo: string;
   titleZh: string;
   subtitleKo: string;
@@ -35,7 +36,10 @@ const bannerSlides: BannerSlide[] = [
   {
     id: 2,
     bg: 'from-[#EF6253] via-[#FF7A66] to-[#FF8F7A]',
-    bgImage: 'https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=1200&auto=format&fit=crop', // 중국 풍경
+    splitImages: {
+      left: 'https://images.unsplash.com/photo-1584646098378-0874589d76b1?w=1200&auto=format&fit=crop', // 광화문
+      right: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=1200&auto=format&fit=crop', // 천안문
+    },
     titleKo: '중국에서 한국으로',
     titleZh: '从中国到韩国',
     subtitleKo: '해상운송으로 대량 구매도 저렴하게',
@@ -59,7 +63,7 @@ const bannerSlides: BannerSlide[] = [
   {
     id: 4,
     bg: 'from-[#41B979] via-[#4EC985] to-[#5CD991]',
-    bgImage: 'https://images.unsplash.com/photo-1556742393-d75f468bfcb0?w=1200&auto=format&fit=crop', // 비즈니스/거래
+    bgImage: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&auto=format&fit=crop', // 비즈니스 핸드셰이크
     titleKo: '판매자와 직거래',
     titleZh: '与卖家直接交易',
     subtitleKo: '낮은 수수료, 높은 투명성',
@@ -106,7 +110,27 @@ export function HeroBanner() {
       >
         {/* 배경 그라디언트 + 이미지 */}
         <div className={cn('absolute inset-0 bg-gradient-to-r transition-all duration-500', slide.bg)} />
-        {slide.bgImage && (
+
+        {/* 좌우 분할 이미지 */}
+        {slide.splitImages && (
+          <>
+            <div className="absolute inset-0 flex">
+              <div
+                className="w-1/2 bg-cover bg-center transition-opacity duration-500"
+                style={{ backgroundImage: `url(${slide.splitImages.left})` }}
+              />
+              <div
+                className="w-1/2 bg-cover bg-center transition-opacity duration-500"
+                style={{ backgroundImage: `url(${slide.splitImages.right})` }}
+              />
+            </div>
+            {/* 오버레이 (텍스트 가독성) */}
+            <div className="absolute inset-0 bg-black/50" />
+          </>
+        )}
+
+        {/* 단일 배경 이미지 */}
+        {slide.bgImage && !slide.splitImages && (
           <>
             <div
               className="absolute inset-0 bg-cover bg-center transition-opacity duration-500"
