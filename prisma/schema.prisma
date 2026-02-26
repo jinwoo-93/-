@@ -22,6 +22,7 @@ model User {
   profileImage       String?
   userType           UserType  @default(BUYER)
   country            Country   @default(KR)
+  nationality        Country   @default(KR)  // 사용자 국적 (댓글 번역용)
   language           Language  @default(KO)
   marketingAgreed    Boolean   @default(false)
 
@@ -69,6 +70,7 @@ model User {
   bids               AdBid[]
   disputes           Dispute[]
   votes              DisputeVote[]
+  disputeComments    DisputeComment[] @relation("DisputeComments")
   messages           Message[] @relation("SentMessages")
   receivedMessages   Message[] @relation("ReceivedMessages")
   shippingCompany    ShippingCompany?   // UserType이 SHIPPING인 경우
@@ -537,6 +539,7 @@ model Dispute {
   buyerRefundRate Float?          // 구매자 환불 비율 (0~100%)
 
   votes           DisputeVote[]
+  comments        DisputeComment[]
 
   resolvedAt      DateTime?
   createdAt       DateTime        @default(now())
@@ -570,6 +573,23 @@ model DisputeVote {
 enum VoteFor {
   BUYER
   SELLER
+}
+
+model DisputeComment {
+  id          String    @id @default(cuid())
+  disputeId   String
+  dispute     Dispute   @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  userId      String
+  user        User      @relation("DisputeComments", fields: [userId], references: [id])
+
+  content     String    @db.Text
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([disputeId])
+  @@index([userId])
 }
 
 // ==================== 리뷰 ====================

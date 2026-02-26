@@ -13,6 +13,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { formatDate } from '@/lib/utils';
+import { DisputeComments } from '@/components/dispute/DisputeComments';
 
 interface Dispute {
   id: string;
@@ -309,7 +310,7 @@ export default function DisputeDetailPage() {
 
       {/* 해결 결과 */}
       {dispute.status === 'RESOLVED' && dispute.buyerRefundRate !== null && (
-        <Card className="bg-green-50 dark:bg-green-900/20">
+        <Card className="bg-green-50 dark:bg-green-900/20 mb-6">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
@@ -323,6 +324,9 @@ export default function DisputeDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* 댓글 섹션 */}
+      <DisputeComments disputeId={params.id as string} />
     </div>
   );
 }
