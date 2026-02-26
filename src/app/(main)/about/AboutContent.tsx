@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Shield,
@@ -76,42 +77,70 @@ const FEATURES = [
   },
 ];
 
-const STATS = [
-  { valueKo: '10만+', valueZh: '10万+', labelKo: '누적 회원 수', labelZh: '累计会员数' },
-  { valueKo: '50만+', valueZh: '50万+', labelKo: '거래 건수', labelZh: '交易笔数' },
-  { valueKo: '98%', valueZh: '98%', labelKo: '거래 만족도', labelZh: '交易满意度' },
-  { valueKo: '24시간', valueZh: '24小时', labelKo: '고객 지원', labelZh: '客户支持' },
-];
-
-const TEAM = [
-  {
-    roleKo: 'CEO / 대표이사',
-    roleZh: 'CEO / 首席执行官',
-    nameKo: '홍길동',
-    nameZh: '洪吉童',
-    descKo: '한중 전자상거래 15년 경력, 전 네이버 글로벌커머스 총괄',
-    descZh: '韩中电子商务15年经验，前Naver全球商务总监',
-  },
-  {
-    roleKo: 'CTO / 기술이사',
-    roleZh: 'CTO / 首席技术官',
-    nameKo: '김개발',
-    nameZh: '金开发',
-    descKo: '분산 시스템 전문가, 전 카카오 결제 시스템 아키텍트',
-    descZh: '分布式系统专家，前Kakao支付系统架构师',
-  },
-  {
-    roleKo: 'COO / 운영이사',
-    roleZh: 'COO / 首席运营官',
-    nameKo: '이운영',
-    nameZh: '李运营',
-    descKo: '국제 물류 10년 경력, 전 쿠팡 크로스보더 물류 팀장',
-    descZh: '国际物流10年经验，前Coupang跨境物流组长',
-  },
-];
+interface PlatformStats {
+  userCount: number;
+  orderCount: number;
+  satisfaction: number;
+}
 
 export default function AboutContent() {
   const { language } = useLanguage();
+  const [stats, setStats] = useState<PlatformStats>({
+    userCount: 0,
+    orderCount: 0,
+    satisfaction: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/stats');
+      const data = await response.json();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 숫자 포맷 함수
+  const formatNumber = (num: number) => {
+    if (num >= 10000) {
+      return `${Math.floor(num / 10000)}${language === 'ko' ? '만' : '万'}+`;
+    }
+    return num.toLocaleString();
+  };
+
+  const platformStats = [
+    {
+      value: formatNumber(stats.userCount),
+      labelKo: '누적 회원 수',
+      labelZh: '累计会员数',
+    },
+    {
+      value: formatNumber(stats.orderCount),
+      labelKo: '거래 건수',
+      labelZh: '交易笔数',
+    },
+    {
+      value: stats.satisfaction > 0 ? `${stats.satisfaction}%` : '-',
+      labelKo: '거래 만족도',
+      labelZh: '交易满意度',
+    },
+    {
+      valueKo: '평일 9-18시',
+      valueZh: '工作日 9-18时',
+      labelKo: '고객 지원',
+      labelZh: '客户支持',
+    },
+  ];
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
@@ -135,12 +164,20 @@ export default function AboutContent() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        {STATS.map((stat, index) => (
+        {platformStats.map((stat, index) => (
           <Card key={index}>
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-primary">
-                {language === 'ko' ? stat.valueKo : stat.valueZh}
-              </p>
+              {isLoading ? (
+                <div className="h-8 bg-gray-200 animate-pulse rounded mb-2" />
+              ) : (
+                <p className="text-2xl font-bold text-primary">
+                  {'valueKo' in stat && 'valueZh' in stat
+                    ? language === 'ko'
+                      ? stat.valueKo
+                      : stat.valueZh
+                    : stat.value}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground mt-1">
                 {language === 'ko' ? stat.labelKo : stat.labelZh}
               </p>
@@ -216,39 +253,41 @@ export default function AboutContent() {
         </div>
       </div>
 
-      {/* Team */}
+      {/* Company Info */}
       <div className="mb-12">
         <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
           <Users className="h-5 w-5 text-blue-500" />
-          {language === 'ko' ? '경영진 소개' : '管理团队'}
+          {language === 'ko' ? '회사 정보' : '公司信息'}
         </h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          {language === 'ko'
-            ? '한중 커머스와 기술 분야의 전문가들이 함께합니다'
-            : '韩中商务和技术领域的专家团队'}
-        </p>
-        <div className="grid md:grid-cols-3 gap-4">
-          {TEAM.map((member, index) => (
-            <Card key={index}>
-              <CardContent className="p-5">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center mb-3">
-                  <span className="text-lg font-bold text-blue-700">
-                    {(language === 'ko' ? member.nameKo : member.nameZh).charAt(0)}
-                  </span>
-                </div>
-                <p className="text-xs text-primary font-medium mb-1">
-                  {language === 'ko' ? member.roleKo : member.roleZh}
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-sm text-muted-foreground min-w-[80px]">
+                  {language === 'ko' ? '대표자' : '代表'}
+                </span>
+                <span className="text-sm font-medium">
+                  {language === 'ko' ? '박병찬' : '朴秉灿'}
+                </span>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-sm text-muted-foreground min-w-[80px]">
+                  {language === 'ko' ? '고객센터' : '客服中心'}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {language === 'ko' ? '평일 09:00 - 18:00' : '工作日 09:00 - 18:00'}
+                </span>
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-muted-foreground">
+                  {language === 'ko'
+                    ? '※ 사업자등록번호, 주소, 연락처 등은 사업자 등록 후 공개됩니다.'
+                    : '※ 营业执照号码、地址、联系方式等将在完成企业注册后公开。'}
                 </p>
-                <p className="font-semibold text-sm mb-2">
-                  {language === 'ko' ? member.nameKo : member.nameZh}
-                </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {language === 'ko' ? member.descKo : member.descZh}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* CTA */}
