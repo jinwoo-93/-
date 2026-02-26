@@ -6,6 +6,7 @@ import type { Adapter } from 'next-auth/adapters';
 import type { Session } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import { authConfig } from './auth.config';
+import bcrypt from 'bcryptjs';
 
 // Node.js Runtime 전용 설정 (API 라우트에서 사용)
 // PrismaAdapter, DB 접근 등 포함
@@ -15,7 +16,49 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     // authConfig의 providers를 그대로 사용하되, Credentials만 실제 로직으로 교체
     ...authConfig.providers.filter((p: any) => p.id !== 'credentials'),
+
+    // 이메일/비밀번호 로그인
     Credentials({
+      id: 'email-password',
+      name: 'Email',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+        });
+
+        if (!user || !user.password) {
+          return null; // 사용자 없음 또는 비밀번호 미설정 (OAuth 전용)
+        }
+
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
+
+        if (!isValid) {
+          return null; // 비밀번호 불일치
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.profileImage,
+        };
+      },
+    }),
+
+    // 휴대폰 인증 로그인
+    Credentials({
+      id: 'phone',
       name: 'Phone',
       credentials: {
         phone: { label: 'Phone', type: 'tel' },

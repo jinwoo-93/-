@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { apiRateLimits } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,20 @@ export async function POST(request: NextRequest) {
           error: { message: '전화번호를 입력해주세요.' },
         },
         { status: 400 }
+      );
+    }
+
+    // Rate limiting: 1분에 1회
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const { success: rateLimitSuccess } = await apiRateLimits.sms.limit(`sms:${ip}`);
+
+    if (!rateLimitSuccess) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { message: '너무 많은 요청입니다. 1분 후 다시 시도해주세요.' },
+        },
+        { status: 429 }
       );
     }
 

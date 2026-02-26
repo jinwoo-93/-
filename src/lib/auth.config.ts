@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
+import Naver from 'next-auth/providers/naver';
 import Credentials from 'next-auth/providers/credentials';
 
 // Edge Runtime 호환 설정 (미들웨어에서 사용)
@@ -13,11 +14,14 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    // Kakao는 Client ID/Secret 설정 후 활성화
-    // Kakao({
-    //   clientId: process.env.KAKAO_CLIENT_ID!,
-    //   clientSecret: process.env.KAKAO_CLIENT_SECRET!,
-    // }),
+    Kakao({
+      clientId: process.env.KAKAO_CLIENT_ID!,
+      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+    }),
+    Naver({
+      clientId: process.env.NAVER_CLIENT_ID!,
+      clientSecret: process.env.NAVER_CLIENT_SECRET!,
+    }),
     Credentials({
       name: 'Phone',
       credentials: {
