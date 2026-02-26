@@ -4,7 +4,7 @@
   "description": "한중 크로스보더 C2C 마켓플레이스",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
