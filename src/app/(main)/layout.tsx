@@ -4,6 +4,7 @@ import { BottomNavigation } from '@/components/common/BottomNavigation';
 import { FloatingKakaoChat } from '@/components/common/FloatingKakaoChat';
 import { FloatingExchangeCalculator } from '@/components/common/FloatingExchangeCalculator';
 import CategoryNav from '@/components/layout/CategoryNav';
+import { AIChatbot } from '@/components/support/AIChatbot';
 
 export default function MainLayout({
   children,
@@ -31,7 +32,7 @@ export default function MainLayout({
 
       {/* 플로팅 버튼들 - 각 컴포넌트가 자체 위치 지정 */}
       <FloatingExchangeCalculator />
-      <FloatingKakaoChat />
+      <AIChatbot />
     </div>
   );
 }
