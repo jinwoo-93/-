@@ -28,6 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoadingPage } from '@/components/common/LoadingSpinner';
+import { RequireAuth } from '@/components/auth/RequireAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import type { User as UserType } from '@/types';
@@ -137,7 +138,8 @@ export default function MyPage() {
   ];
 
   return (
-    <div className="container-app py-6 max-w-2xl">
+    <RequireAuth>
+      <div className="container-app py-6 max-w-2xl">
       {/* 프로필 카드 */}
       <Card className="mb-6">
         <CardContent className="pt-6">
@@ -320,6 +322,7 @@ export default function MyPage() {
         <LogOut className="h-4 w-4 mr-2" />
         {t('auth.logout')}
       </Button>
-    </div>
+      </div>
+    </RequireAuth>
   );
 }
