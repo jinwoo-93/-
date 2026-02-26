@@ -91,6 +91,48 @@ export default function HomePage() {
 
       <HeroBanner />
 
+      {/* 플랫폼 소개 배너 */}
+      <Link href="/about">
+        <div className="bg-gradient-to-r from-black via-gray-900 to-black border-y border-gray-800 hover:from-gray-900 hover:to-gray-900 transition-all cursor-pointer">
+          <div className="container-app py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-white" />
+                  <span className="text-[14px] font-bold text-white">
+                    {language === 'ko' ? '직구역구가 특별한 이유' : '直购易购的独特之处'}
+                  </span>
+                </div>
+                <div className="hidden md:flex items-center gap-6 text-[12px] text-white/70">
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-3.5 h-3.5" />
+                    {language === 'ko' ? '에스크로 결제' : '托管支付'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" />
+                    {language === 'ko' ? '커뮤니티 분쟁 해결' : '社区纠纷解决'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Truck className="w-3.5 h-3.5" />
+                    {language === 'ko' ? '양방향 배송' : '双向配送'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <CreditCard className="w-3.5 h-3.5" />
+                    {language === 'ko' ? '낮은 수수료' : '低手续费'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-white/70 text-[12px]">
+                <span className="hidden sm:inline">
+                  {language === 'ko' ? '자세히 보기' : '查看详情'}
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+
       {/* 선택된 모드 표시 바 */}
       <div className="border-b border-gray-100 bg-gray-50">
         <div className="container-app py-2.5 flex items-center justify-between">
