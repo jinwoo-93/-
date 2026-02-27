@@ -12,7 +12,7 @@ export async function GET() {
       // 완료된 거래 건수
       prisma.order.count({
         where: {
-          status: 'COMPLETED',
+          status: 'CONFIRMED',
         },
       }),
 

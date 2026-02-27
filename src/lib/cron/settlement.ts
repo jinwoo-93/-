@@ -80,12 +80,36 @@ export async function processMonthlySettlements(): Promise<SettlementResult> {
         const totalRevenue = orders.reduce((sum, order) => sum + (order.shippingFeeKRW || 0), 0);
 
         // 공제 내역 조회 (파손/분실)
-        // TODO: 실제 파손/분실 기록이 있다면 여기서 조회
+        const orderIds = orders.map((order) => order.id);
 
-        const damageDeductions = 0; // 파손 공제액
-        const damageCount = 0;
-        const lossDeductions = 0; // 분실 공제액
-        const lossCount = 0;
+        const disputes = await prisma.dispute.findMany({
+          where: {
+            orderId: { in: orderIds },
+            shippingCompanyLiable: true,
+            status: 'RESOLVED',
+            resolvedAt: {
+              gte: new Date(settlementYear, settlementMonth - 1, 1),
+              lt: new Date(settlementYear, settlementMonth, 1),
+            },
+          },
+          select: {
+            compensationAmount: true,
+            compensationType: true,
+          },
+        });
+
+        // 파손/분실 배상금 집계
+        const damageDisputes = disputes.filter((d) => d.compensationType === 'DAMAGE');
+        const lossDisputes = disputes.filter((d) => d.compensationType === 'LOSS');
+
+        const damageDeductions = damageDisputes.reduce(
+          (sum, d) => sum + (d.compensationAmount || 0),
+          0
+        );
+        const damageCount = damageDisputes.length;
+
+        const lossDeductions = lossDisputes.reduce((sum, d) => sum + (d.compensationAmount || 0), 0);
+        const lossCount = lossDisputes.length;
 
         // 수수료 계산 (5%)
         const platformFee = Math.floor(totalRevenue * 0.05);

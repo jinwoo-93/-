@@ -40,16 +40,12 @@ export async function GET(request: NextRequest) {
     }
 
     // TODO: User 모델에 다음 필드 추가 필요:
-    // - bankName, accountNumber, accountHolder (은행 계좌 정보)
     // - introduction (판매자 소개)
     // - notificationEmail, notificationOrder, notificationSettlement (알림 설정)
     return NextResponse.json({
       success: true,
       data: {
         ...user,
-        bankName: null,
-        accountNumber: null,
-        accountHolder: null,
         introduction: null,
         notificationEmail: true,
         notificationOrder: true,
@@ -84,18 +80,19 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { nickname } = body;
+    const { nickname, bankName, accountNumber, accountHolder } = body;
 
     // TODO: User 모델에 다음 필드 추가 필요:
-    // - bankName, accountNumber, accountHolder (은행 계좌 정보)
     // - introduction (판매자 소개)
     // - notificationEmail, notificationOrder, notificationSettlement (알림 설정)
-    // 현재는 닉네임만 수정 가능
 
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {
         ...(nickname && { nickname }),
+        ...(bankName && { bankName }),
+        ...(accountNumber && { accountNumber }),
+        ...(accountHolder && { accountHolder }),
       },
     });
 

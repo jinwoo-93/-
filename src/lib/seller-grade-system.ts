@@ -183,26 +183,32 @@ async function getSellerStats(userId: string): Promise<{
   const responseRate = totalQAs > 0 ? (answeredQAs / totalQAs) * 100 : 100;
 
   // 배송 점수 (정시 배송율 기반)
-  const [totalOrders, onTimeOrders] = await Promise.all([
-    prisma.order.count({
-      where: {
-        sellerId: userId,
-        status: {
-          in: ['DELIVERED', 'CONFIRMED'],
-        },
+  const deliveredOrders = await prisma.order.findMany({
+    where: {
+      sellerId: userId,
+      status: {
+        in: ['DELIVERED', 'CONFIRMED'],
       },
-    }),
-    prisma.order.count({
-      where: {
-        sellerId: userId,
-        status: {
-          in: ['DELIVERED', 'CONFIRMED'],
-        },
-        // TODO: 예상 배송일 vs 실제 배송일 비교 로직 추가
-        // deliveredAt <= expectedDeliveryDate
+      deliveredAt: {
+        not: null,
       },
-    }),
-  ]);
+    },
+    select: {
+      deliveredAt: true,
+      estimatedDeliveryDate: true,
+    },
+  });
+
+  const totalOrders = deliveredOrders.length;
+
+  // 예상 배송일이 설정된 주문 중 정시 배송된 주문 수
+  const onTimeOrders = deliveredOrders.filter((order) => {
+    // 예상 배송일이 없으면 정시 배송으로 간주
+    if (!order.estimatedDeliveryDate) return true;
+
+    // deliveredAt이 estimatedDeliveryDate 이전이거나 같으면 정시 배송
+    return order.deliveredAt! <= order.estimatedDeliveryDate;
+  }).length;
 
   const shippingScore = totalOrders > 0 ? (onTimeOrders / totalOrders) * 100 : 100;
 
@@ -396,8 +402,6 @@ export async function updateSellerGrades(): Promise<{
     for (const seller of sellers) {
       const gradeInfo = await getSellerGradeInfo(seller.id);
 
-      // TODO: User 모델에 sellerGrade 필드 추가 필요
-      /*
       const currentGrade = await prisma.user.findUnique({
         where: { id: seller.id },
         select: { sellerGrade: true },
@@ -434,7 +438,6 @@ export async function updateSellerGrades(): Promise<{
           upgradedCount++;
         }
       }
-      */
 
       updatedCount++;
     }

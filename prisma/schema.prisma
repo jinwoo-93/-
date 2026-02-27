@@ -43,6 +43,15 @@ model User {
   businessName       String?
   businessLicenseUrl String?
 
+  // 계좌 정보 (정산용)
+  bankName           String?
+  accountNumber      String?
+  accountHolder      String?
+  birthDate          DateTime?         // 본인인증/정산용
+
+  // 활동 기록
+  lastLoginAt        DateTime?
+
   // 뱃지
   hasExcellentBadge  Boolean   @default(false)
   badgeAwardedAt     DateTime?
@@ -443,10 +452,11 @@ model Order {
   preShipPhotos     String[]
 
   // 타임스탬프
-  paidAt            DateTime?
-  shippedAt         DateTime?
-  deliveredAt       DateTime?
-  confirmedAt       DateTime?
+  paidAt                DateTime?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  confirmedAt           DateTime?
+  estimatedDeliveryDate DateTime?  // 예상 배송 완료일
 
   payment           Payment?
   dispute           Dispute?
@@ -537,6 +547,11 @@ model Dispute {
 
   // 최종 결정
   buyerRefundRate Float?          // 구매자 환불 비율 (0~100%)
+
+  // 배송사 책임 (파손/분실)
+  shippingCompanyLiable Boolean   @default(false)  // 배송사 책임 여부
+  compensationAmount    Int?                       // 배송사 배상금 (KRW)
+  compensationType      String?                    // DAMAGE(파손), LOSS(분실)
 
   votes           DisputeVote[]
   comments        DisputeComment[]
@@ -660,6 +675,11 @@ model ShippingCompany {
   depositAmount      Int              @default(1000000)  // 예치 보증금 (기본 100만원)
   depositBalance     Int              @default(1000000)  // 남은 보증금
   lastDepositAt      DateTime?                          // 마지막 보증금 충전일
+
+  // 계좌 정보 (정산용)
+  bankName           String?
+  accountNumber      String?
+  accountHolder      String?
 
   // API 연동 (추후 확장)
   apiProvider        String?                            // 'smartparcel', 'sfexpress' 등

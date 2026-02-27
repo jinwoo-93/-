@@ -44,15 +44,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // TODO: User 모델에 은행 계좌 필드 추가 필요 (bankName, accountNumber, accountHolder)
     return NextResponse.json({
       success: true,
-      data: {
-        ...user,
-        bankName: null,
-        accountNumber: null,
-        accountHolder: null,
-      },
+      data: user,
     });
   } catch (error) {
     console.error('Verification GET error:', error);
@@ -170,8 +164,6 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // TODO: User 모델에 은행 계좌 필드 추가 필요 (bankName, accountNumber, accountHolder)
-      // 현재는 계좌 정보를 저장할 수 없음
       await prisma.user.update({
         where: { id: session.user.id },
         data: {
@@ -180,6 +172,9 @@ export async function POST(request: NextRequest) {
           businessLicenseUrl: businessLicenseUrl || null,
           isBusinessVerified: true,
           businessVerifiedAt: new Date(),
+          bankName,
+          accountNumber,
+          accountHolder,
         },
       });
 

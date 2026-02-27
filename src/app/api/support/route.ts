@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { notifyAdminNewTicket, sendTicketConfirmation } from '@/lib/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,8 +113,35 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 알림 생성 (관리자용)
-    // TODO: 관리자에게 알림 발송
+    // 관리자에게 이메일 알림 발송 (비동기, 실패해도 문의 접수는 성공)
+    notifyAdminNewTicket({
+      ticketId: ticket.id,
+      name: ticket.name,
+      email: ticket.email,
+      phone: ticket.phone || undefined,
+      category: ticket.category,
+      subject: ticket.subject,
+      content: ticket.content,
+      orderId: ticket.orderId || undefined,
+      createdAt: ticket.createdAt,
+    }).catch((error) => {
+      console.error('[Support] Failed to send admin notification:', error);
+    });
+
+    // 고객에게 접수 확인 이메일 발송 (비동기)
+    sendTicketConfirmation({
+      ticketId: ticket.id,
+      name: ticket.name,
+      email: ticket.email,
+      phone: ticket.phone || undefined,
+      category: ticket.category,
+      subject: ticket.subject,
+      content: ticket.content,
+      orderId: ticket.orderId || undefined,
+      createdAt: ticket.createdAt,
+    }).catch((error) => {
+      console.error('[Support] Failed to send confirmation:', error);
+    });
 
     return NextResponse.json({
       success: true,

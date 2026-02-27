@@ -71,15 +71,10 @@ export async function GET(
       );
     }
 
-    // TODO: ShippingCompany 모델에 다음 필드 추가 필요:
-    // - businessNumber (사업자번호)
-    // - bankName, accountNumber, accountHolder (은행 계좌 정보)
+    // TODO: ShippingCompany 모델에 businessNumber (사업자번호) 필드 추가 필요
     const companyInfo = {
       ...shippingCompany,
       businessNumber: null,
-      bankName: null,
-      accountNumber: null,
-      accountHolder: null,
     };
 
     // 해당 월의 주문 조회
@@ -106,8 +101,36 @@ export async function GET(
     const totalRevenue = orders.reduce((sum, order) => sum + order.shippingFeeKRW, 0);
 
     // 공제액 계산 (파손/분실 배상금 등)
-    // TODO: 실제 배상금 데이터를 Dispute 테이블에서 조회해야 함
-    const totalDeductions = 0;
+    const orderIds = await prisma.order.findMany({
+      where: {
+        shippingCompanyId: shippingCompany.id,
+        status: {
+          in: ['SHIPPING', 'DELIVERED', 'CONFIRMED'],
+        },
+        shippedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: { id: true },
+    });
+
+    const disputes = await prisma.dispute.findMany({
+      where: {
+        orderId: { in: orderIds.map((o) => o.id) },
+        shippingCompanyLiable: true,
+        status: 'RESOLVED',
+        resolvedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        compensationAmount: true,
+      },
+    });
+
+    const totalDeductions = disputes.reduce((sum, d) => sum + (d.compensationAmount || 0), 0);
 
     const netAmount = totalRevenue - totalDeductions;
 

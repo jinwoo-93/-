@@ -171,8 +171,6 @@ export async function selectMonthlyBestReviews(): Promise<{
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
     // 이번 달 리뷰 중 좋아요가 많은 상위 10개
-    // TODO: Review 모델에 likesCount 필드 추가 필요
-    /*
     const bestReviews = await prisma.review.findMany({
       where: {
         createdAt: {
@@ -186,7 +184,7 @@ export async function selectMonthlyBestReviews(): Promise<{
       take: 10,
       select: {
         id: true,
-        userId: true,
+        reviewerId: true,
       },
     });
 
@@ -204,9 +202,9 @@ export async function selectMonthlyBestReviews(): Promise<{
 
       // 추가 보상 지급 (1000 포인트)
       const userPoint = await prisma.userPoint.upsert({
-        where: { userId: review.userId },
+        where: { userId: review.reviewerId },
         create: {
-          userId: review.userId,
+          userId: review.reviewerId,
           balance: 1000,
           totalEarned: 1000,
         },
@@ -234,7 +232,7 @@ export async function selectMonthlyBestReviews(): Promise<{
       // 알림 전송
       await prisma.notification.create({
         data: {
-          userId: review.userId,
+          userId: review.reviewerId,
           type: 'SYSTEM',
           title: '베스트 리뷰 선정',
           message: '축하합니다! 이달의 베스트 리뷰로 선정되었습니다. 1000 포인트가 지급되었습니다.',
@@ -250,14 +248,6 @@ export async function selectMonthlyBestReviews(): Promise<{
     return {
       success: true,
       selectedCount,
-    };
-    */
-
-    console.log('[ReviewRewardSystem] Best review selection skipped (likesCount field not implemented)');
-
-    return {
-      success: true,
-      selectedCount: 0,
     };
   } catch (error) {
     console.error('[ReviewRewardSystem] Error selecting best reviews:', error);

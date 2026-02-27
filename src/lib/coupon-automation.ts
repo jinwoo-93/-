@@ -269,19 +269,28 @@ export async function issueReviewCoupon(userId: string, reviewId: string) {
  */
 export async function issueBirthdayCoupons() {
   try {
-    // TODO: User 모델에 birthDate 필드 추가 필요
     // 오늘이 생일인 사용자 찾기
-    /*
     const today = new Date();
     const month = today.getMonth() + 1;
     const day = today.getDate();
 
-    const users = await prisma.user.findMany({
+    // birthDate에서 월/일이 오늘과 같은 사용자 찾기
+    const allUsers = await prisma.user.findMany({
       where: {
-        birthMonth: month,
-        birthDay: day,
+        birthDate: {
+          not: null,
+        },
       },
-      select: { id: true },
+      select: {
+        id: true,
+        birthDate: true,
+      },
+    });
+
+    const users = allUsers.filter((user) => {
+      if (!user.birthDate) return false;
+      const birthDate = new Date(user.birthDate);
+      return birthDate.getMonth() + 1 === month && birthDate.getDate() === day;
     });
 
     let successCount = 0;
@@ -308,15 +317,6 @@ export async function issueBirthdayCoupons() {
       success: true,
       successCount,
       failureCount,
-    };
-    */
-
-    console.log('[CouponAutomation] Birthday coupon issuance skipped (birthDate field not implemented)');
-
-    return {
-      success: true,
-      successCount: 0,
-      failureCount: 0,
     };
   } catch (error) {
     console.error('[CouponAutomation] Error issuing birthday coupons:', error);
@@ -396,8 +396,6 @@ export async function issueCartAbandonCoupons() {
  */
 export async function issueInactiveUserCoupons() {
   try {
-    // TODO: User 모델에 lastLoginAt 필드 추가 필요
-    /*
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     const users = await prisma.user.findMany({
@@ -427,14 +425,6 @@ export async function issueInactiveUserCoupons() {
     return {
       success: true,
       successCount,
-    };
-    */
-
-    console.log('[CouponAutomation] Inactive user coupon issuance skipped (lastLoginAt field not implemented)');
-
-    return {
-      success: true,
-      successCount: 0,
     };
   } catch (error) {
     console.error('[CouponAutomation] Error issuing inactive user coupons:', error);

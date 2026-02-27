@@ -115,6 +115,9 @@ export async function GET(request: NextRequest) {
         id: true,
         nickname: true,
         profileImage: true,
+        bankName: true,
+        accountNumber: true,
+        accountHolder: true,
       },
     });
 
@@ -128,9 +131,9 @@ export async function GET(request: NextRequest) {
         userId: sellerId,
         userNickname: seller?.nickname || 'Unknown',
         userProfileImage: seller?.profileImage || null,
-        bankName: null, // TODO: 추후 User 모델에 추가 필요
-        accountNumber: null,
-        accountHolder: null,
+        bankName: seller?.bankName || null,
+        accountNumber: seller?.accountNumber || null,
+        accountHolder: seller?.accountHolder || null,
         totalRevenue: data.totalRevenue,
         platformFee: data.platformFee,
         netAmount: data.netAmount,

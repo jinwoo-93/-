@@ -79,8 +79,37 @@ export async function GET(request: NextRequest) {
     const totalRevenue = orders.reduce((sum, order) => sum + order.shippingFeeKRW, 0);
     const avgDeliveryFee = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-    // TODO: 실제 공제액은 Dispute 테이블에서 조회
-    const totalDeductions = 0;
+    // 공제액 계산 (파손/분실 배상금)
+    const orderIds = await prisma.order.findMany({
+      where: {
+        shippingCompanyId: shippingCompany.id,
+        status: {
+          in: ['SHIPPING', 'DELIVERED', 'CONFIRMED'],
+        },
+        shippedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: { id: true },
+    });
+
+    const disputes = await prisma.dispute.findMany({
+      where: {
+        orderId: { in: orderIds.map((o) => o.id) },
+        shippingCompanyLiable: true,
+        status: 'RESOLVED',
+        resolvedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        compensationAmount: true,
+      },
+    });
+
+    const totalDeductions = disputes.reduce((sum, d) => sum + (d.compensationAmount || 0), 0);
     const netRevenue = totalRevenue - totalDeductions;
 
     const stats = {

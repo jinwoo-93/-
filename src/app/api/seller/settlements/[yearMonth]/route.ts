@@ -55,13 +55,7 @@ export async function GET(
       );
     }
 
-    // TODO: User 모델에 은행 계좌 필드 추가 필요 (bankName, accountNumber, accountHolder)
-    const userInfo = {
-      ...user,
-      bankName: null,
-      accountNumber: null,
-      accountHolder: null,
-    };
+    const userInfo = user;
 
     // 해당 월의 주문 조회
     const startDate = new Date(year, month - 1, 1);
