@@ -86,14 +86,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-[380px]">
         {/* 로고 */}
-        <div className="text-center mb-10">
+        <Link href="/" className="block text-center mb-10 cursor-pointer hover:opacity-80 transition-opacity">
           <h1 className="text-[22px] font-black tracking-tight text-black">
             JIKGUYEOKGU
           </h1>
           <p className="text-[13px] text-gray-400 mt-1">
             {language === 'ko' ? '한중 크로스보더 마켓플레이스' : '韩中跨境交易平台'}
           </p>
-        </div>
+        </Link>
 
         {/* 소셜 로그인 */}
         <div className="space-y-2.5 mb-8">
