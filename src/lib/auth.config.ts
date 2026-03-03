@@ -82,8 +82,12 @@ export const authConfig: NextAuthConfig = {
         return true;
       }
 
-      // 로그인 페이지: 이미 로그인 되어 있으면 홈으로
+      // 로그인 페이지: 이미 로그인 되어 있으면 홈으로 (단, callbackUrl이 있으면 해당 페이지로)
       if (isAuthPage && isLoggedIn) {
+        const callbackUrl = nextUrl.searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          return Response.redirect(new URL(callbackUrl, nextUrl));
+        }
         return Response.redirect(new URL('/', nextUrl));
       }
 

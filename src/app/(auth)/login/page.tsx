@@ -55,6 +55,10 @@ export default function LoginPage() {
 
   const handleSocialLogin = async (provider: string) => {
     try {
+      // URL에서 callbackUrl 파라미터 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get('callbackUrl') || '/';
+
       const csrfRes = await fetch('/api/auth/csrf');
       const { csrfToken } = await csrfRes.json();
 
@@ -71,7 +75,7 @@ export default function LoginPage() {
       const callbackInput = document.createElement('input');
       callbackInput.type = 'hidden';
       callbackInput.name = 'callbackUrl';
-      callbackInput.value = window.location.origin;
+      callbackInput.value = window.location.origin + callbackUrl;
       form.appendChild(callbackInput);
 
       document.body.appendChild(form);
