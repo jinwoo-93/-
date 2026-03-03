@@ -66,25 +66,31 @@ export const authConfig: NextAuthConfig = {
       if (url.startsWith('/')) return `${baseUrl}${url}`;
 
       // 같은 origin의 URL인 경우 그대로 사용
-      if (new URL(url).origin === baseUrl) return url;
+      const urlObj = new URL(url);
+      if (urlObj.origin === baseUrl) return url;
 
-      // OAuth 콜백에서 callbackUrl 파라미터 확인
-      try {
-        const urlObj = new URL(url);
-        const callbackUrl = urlObj.searchParams.get('callbackUrl');
-        if (callbackUrl) {
-          // callbackUrl이 절대 경로인 경우
-          if (callbackUrl.startsWith('/')) {
-            return `${baseUrl}${callbackUrl}`;
+      // OAuth 콜백 URL 파싱
+      const callbackUrl = urlObj.searchParams.get('callbackUrl');
+
+      // callbackUrl이 있는 경우
+      if (callbackUrl) {
+        try {
+          // URL 디코딩 (예: %2Fadmin%2Flogin → /admin/login)
+          const decodedCallback = decodeURIComponent(callbackUrl);
+
+          // 절대 경로인 경우
+          if (decodedCallback.startsWith('/')) {
+            return `${baseUrl}${decodedCallback}`;
           }
-          // callbackUrl이 같은 origin인 경우
-          const callbackUrlObj = new URL(callbackUrl);
+
+          // 완전한 URL인 경우
+          const callbackUrlObj = new URL(decodedCallback);
           if (callbackUrlObj.origin === baseUrl) {
-            return callbackUrl;
+            return decodedCallback;
           }
+        } catch {
+          // URL 파싱 실패 시 계속 진행
         }
-      } catch {
-        // URL 파싱 실패 시 무시
       }
 
       // 기본값: 메인 페이지
@@ -122,14 +128,21 @@ export const authConfig: NextAuthConfig = {
 
       // 관리자 페이지: 로그인 + ADMIN 역할 필요
       if (isAdminPage) {
+        // 관리자 로그인 페이지는 제외
+        if (nextUrl.pathname === '/admin/login') {
+          return true;
+        }
+
         if (!isLoggedIn) {
-          const loginUrl = new URL('/login', nextUrl);
-          loginUrl.searchParams.set('callbackUrl', nextUrl.pathname);
+          // 로그인되지 않은 경우 관리자 로그인 페이지로
+          const loginUrl = new URL('/admin/login', nextUrl);
           return Response.redirect(loginUrl);
         }
+
         // JWT 토큰의 userType 확인 (auth.ts의 jwt 콜백에서 설정)
         const userType = (auth as any)?.user?.userType;
         if (userType !== 'ADMIN') {
+          // 관리자 권한이 없는 경우 메인 페이지로
           return Response.redirect(new URL('/', nextUrl));
         }
       }

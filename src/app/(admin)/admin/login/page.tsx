@@ -58,28 +58,14 @@ export default function AdminLoginPage() {
     setSocialLoading(provider);
 
     try {
-      const result = await signIn(provider, {
-        redirect: false,
+      // 소셜 로그인 시작 - callbackUrl을 명시적으로 전달
+      await signIn(provider, {
         callbackUrl: '/admin',
+        redirect: true, // 자동 리다이렉트 활성화
       });
 
-      if (result?.error) {
-        setError(`${provider} 로그인에 실패했습니다.`);
-        setSocialLoading(null);
-        return;
-      }
-
-      // 로그인 성공 후 권한 확인
-      const response = await fetch('/api/auth/session');
-      const session = await response.json();
-
-      if (session?.user?.userType === 'ADMIN') {
-        router.push('/admin');
-        router.refresh();
-      } else {
-        setError('관리자 권한이 필요합니다.');
-        setSocialLoading(null);
-      }
+      // redirect: true이므로 아래 코드는 실행되지 않음
+      // 로그인 성공 시 자동으로 callbackUrl로 이동
     } catch (error) {
       console.error('Social login error:', error);
       setError('로그인 중 오류가 발생했습니다.');
