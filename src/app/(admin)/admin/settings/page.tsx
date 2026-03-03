@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const { isAuthenticated, isLoading: authLoading, isAdmin } = useAuth();
   const { language } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
-  const isKorean = language === 'KO';
+  const isKorean = language === 'ko';
 
   useEffect(() => {
     if (!authLoading) {

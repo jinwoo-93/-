@@ -167,10 +167,10 @@ export default function OrdersPage() {
     <div className="space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{language === 'KO' ? '주문 관리' : '订单管理'}</h1>
+        <h1 className="text-2xl font-bold">{language === 'ko' ? '주문 관리' : '订单管理'}</h1>
         <Button onClick={handleExport} variant="outline">
           <Download className="w-4 h-4 mr-2" />
-          {language === 'KO' ? 'CSV 내보내기' : '导出CSV'}
+          {language === 'ko' ? 'CSV 내보내기' : '导出CSV'}
         </Button>
       </div>
 
@@ -179,7 +179,7 @@ export default function OrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {language === 'KO' ? '전체 주문' : '总订单'}
+              {language === 'ko' ? '전체 주문' : '总订单'}
             </CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -191,7 +191,7 @@ export default function OrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {language === 'KO' ? '오늘 주문' : '今日订单'}
+              {language === 'ko' ? '오늘 주문' : '今日订单'}
             </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -203,7 +203,7 @@ export default function OrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {language === 'KO' ? '총 거래액' : '总交易额'}
+              {language === 'ko' ? '총 거래액' : '总交易额'}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -215,7 +215,7 @@ export default function OrdersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {language === 'KO' ? '플랫폼 수수료' : '平台佣金'}
+              {language === 'ko' ? '플랫폼 수수료' : '平台佣金'}
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -234,7 +234,7 @@ export default function OrdersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder={language === 'KO' ? '주문번호, 구매자, 판매자 검색...' : '搜索订单号、买家、卖家...'}
+                  placeholder={language === 'ko' ? '주문번호, 구매자, 판매자 검색...' : '搜索订单号、买家、卖家...'}
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -255,7 +255,7 @@ export default function OrdersPage() {
                   setPage(1);
                 }}
               >
-                {language === 'KO' ? '전체' : '全部'}
+                {language === 'ko' ? '전체' : '全部'}
               </Button>
               {Object.entries(statusMap).map(([status, { ko, zh }]) => (
                 <Button
@@ -267,7 +267,7 @@ export default function OrdersPage() {
                     setPage(1);
                   }}
                 >
-                  {language === 'KO' ? ko : zh}
+                  {language === 'ko' ? ko : zh}
                 </Button>
               ))}
             </div>
@@ -283,22 +283,22 @@ export default function OrdersPage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {language === 'KO' ? '주문정보' : '订单信息'}
+                    {language === 'ko' ? '주문정보' : '订单信息'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {language === 'KO' ? '구매자' : '买家'}
+                    {language === 'ko' ? '구매자' : '买家'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {language === 'KO' ? '판매자' : '卖家'}
+                    {language === 'ko' ? '판매자' : '卖家'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {language === 'KO' ? '금액' : '金额'}
+                    {language === 'ko' ? '금액' : '金额'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {language === 'KO' ? '상태' : '状态'}
+                    {language === 'ko' ? '상태' : '状态'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {language === 'KO' ? '주문일시' : '订单时间'}
+                    {language === 'ko' ? '주문일시' : '订单时间'}
                   </th>
                 </tr>
               </thead>
@@ -306,7 +306,7 @@ export default function OrdersPage() {
                 {orders.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      {language === 'KO' ? '주문이 없습니다' : '暂无订单'}
+                      {language === 'ko' ? '주문이 없습니다' : '暂无订单'}
                     </td>
                   </tr>
                 ) : (
@@ -325,10 +325,10 @@ export default function OrdersPage() {
                           <div>
                             <p className="text-sm font-medium text-gray-900">{order.orderNumber}</p>
                             <p className="text-sm text-gray-500 line-clamp-1">
-                              {language === 'KO' ? order.post.title : (order.post.titleZh || order.post.title)}
+                              {language === 'ko' ? order.post.title : (order.post.titleZh || order.post.title)}
                             </p>
                             <p className="text-xs text-gray-400">
-                              {language === 'KO' ? '수량' : '数量'}: {order.quantity}
+                              {language === 'ko' ? '수량' : '数量'}: {order.quantity}
                             </p>
                           </div>
                         </div>
@@ -356,7 +356,7 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <Badge className={statusMap[order.status]?.color}>
-                          {language === 'KO'
+                          {language === 'ko'
                             ? statusMap[order.status]?.ko
                             : statusMap[order.status]?.zh}
                         </Badge>
@@ -369,10 +369,10 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-900">
-                          {new Date(order.createdAt).toLocaleDateString(language === 'KO' ? 'ko-KR' : 'zh-CN')}
+                          {new Date(order.createdAt).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'zh-CN')}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {new Date(order.createdAt).toLocaleTimeString(language === 'KO' ? 'ko-KR' : 'zh-CN', {
+                          {new Date(order.createdAt).toLocaleTimeString(language === 'ko' ? 'ko-KR' : 'zh-CN', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
@@ -389,7 +389,7 @@ export default function OrdersPage() {
           {pagination.totalPages > 1 && (
             <div className="px-6 py-4 border-t flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                {language === 'KO'
+                {language === 'ko'
                   ? `총 ${pagination.total}개 중 ${(page - 1) * 20 + 1}-${Math.min(page * 20, pagination.total)}개 표시`
                   : `显示 ${(page - 1) * 20 + 1}-${Math.min(page * 20, pagination.total)} 共 ${pagination.total} 个`}
               </p>
@@ -400,7 +400,7 @@ export default function OrdersPage() {
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
                 >
-                  {language === 'KO' ? '이전' : '上一页'}
+                  {language === 'ko' ? '이전' : '上一页'}
                 </Button>
                 <Button
                   variant="outline"
@@ -408,7 +408,7 @@ export default function OrdersPage() {
                   onClick={() => setPage(page + 1)}
                   disabled={page === pagination.totalPages}
                 >
-                  {language === 'KO' ? '다음' : '下一页'}
+                  {language === 'ko' ? '다음' : '下一页'}
                 </Button>
               </div>
             </div>
