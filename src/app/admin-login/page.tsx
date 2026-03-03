@@ -19,8 +19,13 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     // 이미 로그인되어 있고 관리자라면 대시보드로 이동
-    if (status === 'authenticated' && session?.user?.userType === 'ADMIN') {
-      router.push('/admin');
+    if (status === 'authenticated') {
+      if (session?.user?.userType === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        // 관리자가 아니면 에러 표시
+        setError('관리자 권한이 필요합니다. 관리자 계정으로 로그인해주세요.');
+      }
     }
   }, [status, session, router]);
 

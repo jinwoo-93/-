@@ -70,11 +70,17 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const isAuthPage = nextUrl.pathname.startsWith('/login') ||
                          nextUrl.pathname.startsWith('/register');
+      const isAdminLoginPage = nextUrl.pathname.startsWith('/admin-login');
       const isAdminPage = nextUrl.pathname.startsWith('/admin');
       const isProtectedPage = nextUrl.pathname.startsWith('/mypage') ||
                               nextUrl.pathname.startsWith('/orders') ||
                               nextUrl.pathname.startsWith('/messages') ||
                               nextUrl.pathname.startsWith('/posts/create');
+
+      // 관리자 로그인 페이지는 예외 처리 (미들웨어에서 리다이렉트 안 함)
+      if (isAdminLoginPage) {
+        return true;
+      }
 
       // 로그인 페이지: 이미 로그인 되어 있으면 홈으로
       if (isAuthPage && isLoggedIn) {
