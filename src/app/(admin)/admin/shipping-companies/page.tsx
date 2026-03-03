@@ -12,6 +12,13 @@ import {
   Loader2,
   AlertCircle,
   Star,
+  Edit,
+  Pause,
+  Play,
+  DollarSign,
+  Award,
+  TrendingUp,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -204,12 +211,431 @@ function ApprovalModal({ company, onClose, onConfirm, loading }: ApprovalModalPr
   );
 }
 
+// 배송업체 상세 모달
+interface DetailModalProps {
+  company: ShippingCompany;
+  onClose: () => void;
+  onUpdate: () => void;
+}
+
+function DetailModal({ company, onClose, onUpdate }: DetailModalProps) {
+  const [loading, setLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    depositBalance: company.depositBalance,
+    hasExcellentBadge: company.hasExcellentBadge,
+  });
+
+  const handleSuspend = async () => {
+    if (!confirm('이 배송업체를 일시 정지하시겠습니까?')) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/shipping-companies/${company.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'suspend' }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('배송업체가 일시 정지되었습니다.');
+        onUpdate();
+        onClose();
+      } else {
+        alert(data.error?.message || '오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('서버 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleActivate = async () => {
+    if (!confirm('이 배송업체를 다시 활성화하시겠습니까?')) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/shipping-companies/${company.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'activate' }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('배송업체가 활성화되었습니다.');
+        onUpdate();
+        onClose();
+      } else {
+        alert(data.error?.message || '오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('서버 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/shipping-companies/${company.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          depositBalance: formData.depositBalance,
+          hasExcellentBadge: formData.hasExcellentBadge,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('배송업체 정보가 수정되었습니다.');
+        setEditMode(false);
+        onUpdate();
+      } else {
+        alert(data.error?.message || '오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('서버 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* 헤더 */}
+        <div className="p-6 border-b sticky top-0 bg-white z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {company.logo ? (
+                <img src={company.logo} alt={company.name} className="w-16 h-16 rounded-lg object-cover" />
+              ) : (
+                <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <Truck className="w-8 h-8 text-gray-400" />
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold">{company.name}</h2>
+                  <span className="text-gray-600">({company.nameZh})</span>
+                  {company.hasExcellentBadge && (
+                    <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                      <Star className="w-4 h-4" />
+                      우수업체
+                    </span>
+                  )}
+                  {!company.isVerified && (
+                    <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">
+                      승인대기
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600 text-sm mt-1">
+                  {company.isVerified
+                    ? `승인일: ${new Date(company.verifiedAt!).toLocaleDateString()}`
+                    : '미승인 상태'}
+                </p>
+              </div>
+            </div>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <XCircle className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* 본문 */}
+        <div className="p-6 space-y-6">
+          {/* 기본 정보 */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Truck className="w-5 h-5" />
+              기본 정보
+            </h3>
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-600">신청자</p>
+                <p className="font-medium">{company.user?.name || company.user?.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">연락처</p>
+                <p className="font-medium">{company.user?.phone || '-'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">이메일</p>
+                <p className="font-medium">{company.user?.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">등록일</p>
+                <p className="font-medium">{new Date(company.user!.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 서비스 노선 */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              서비스 노선
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {company.serviceRoutes.map((route: any, idx: number) => (
+                <span
+                  key={idx}
+                  className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {route.from} → {route.to}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* 요금 정보 */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              요금 정보
+            </h3>
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <p className="text-sm text-gray-600">kg당 가격</p>
+                <p className="font-medium">₩{company.pricePerKg?.toLocaleString() || '-'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">최소 배송비</p>
+                <p className="font-medium">₩{company.minimumFee?.toLocaleString() || '-'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 보증금 및 배지 관리 */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Award className="w-5 h-5" />
+              보증금 및 배지 관리
+            </h3>
+            {editMode ? (
+              <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                <div>
+                  <label className="block text-sm font-medium mb-2">보증금 잔액</label>
+                  <input
+                    type="number"
+                    value={formData.depositBalance}
+                    onChange={(e) =>
+                      setFormData({ ...formData, depositBalance: parseInt(e.target.value) })
+                    }
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="excellentBadge"
+                    checked={formData.hasExcellentBadge}
+                    onChange={(e) =>
+                      setFormData({ ...formData, hasExcellentBadge: e.target.checked })
+                    }
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="excellentBadge" className="text-sm font-medium">
+                    우수업체 배지 부여
+                  </label>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleUpdate}
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? '저장 중...' : '저장'}
+                  </button>
+                  <button
+                    onClick={() => setEditMode(false)}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-gray-600">보증금 잔액</p>
+                    <p className="text-xl font-bold">₩{company.depositBalance.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      초기 보증금: ₩{company.depositAmount.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">우수업체 배지</p>
+                    <p className="text-lg font-semibold">
+                      {company.hasExcellentBadge ? (
+                        <span className="text-blue-600">✓ 부여됨</span>
+                      ) : (
+                        <span className="text-gray-400">미부여</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {company.isVerified && (
+                  <button
+                    onClick={() => setEditMode(true)}
+                    className="w-full px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 flex items-center justify-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    수정
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 품질 지표 */}
+          {company.isVerified && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                품질 지표
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">총 배송 건수</p>
+                  <p className="text-2xl font-bold">{company.totalShipments.toLocaleString()}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">평균 평점</p>
+                  <p className="text-2xl font-bold">{company.averageRating.toFixed(1)}★</p>
+                </div>
+                <div
+                  className={`p-4 rounded-lg ${
+                    company.damageRate < 1 ? 'bg-green-50' : 'bg-red-50'
+                  }`}
+                >
+                  <p
+                    className={`text-sm mb-1 ${
+                      company.damageRate < 1 ? 'text-green-700' : 'text-red-700'
+                    }`}
+                  >
+                    파손률
+                  </p>
+                  <p
+                    className={`text-2xl font-bold ${
+                      company.damageRate < 1 ? 'text-green-800' : 'text-red-800'
+                    }`}
+                  >
+                    {company.damageRate.toFixed(2)}%
+                  </p>
+                </div>
+                <div
+                  className={`p-4 rounded-lg ${
+                    company.lossRate < 0.5 ? 'bg-green-50' : 'bg-red-50'
+                  }`}
+                >
+                  <p
+                    className={`text-sm mb-1 ${
+                      company.lossRate < 0.5 ? 'text-green-700' : 'text-red-700'
+                    }`}
+                  >
+                    분실률
+                  </p>
+                  <p
+                    className={`text-2xl font-bold ${
+                      company.lossRate < 0.5 ? 'text-green-800' : 'text-red-800'
+                    }`}
+                  >
+                    {company.lossRate.toFixed(2)}%
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-700 mb-1">정시 배송률</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-white rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-blue-600 h-full"
+                      style={{ width: `${company.onTimeRate}%` }}
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-blue-800">
+                    {company.onTimeRate.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 사업자 등록증 */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              사업자 등록증
+            </h3>
+            <a
+              href={company.businessLicenseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              <FileText className="w-4 h-4" />
+              사업자 등록증 보기
+            </a>
+          </div>
+
+          {/* 정산 내역 링크 */}
+          {company.isVerified && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">정산 관리</h3>
+              <Link
+                href="/admin/settlements?tab=shipping"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <DollarSign className="w-4 h-4" />
+                정산 내역 보기
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* 액션 버튼 */}
+        {company.isVerified && (
+          <div className="p-6 border-t bg-gray-50 flex gap-3">
+            <button
+              onClick={handleSuspend}
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Pause className="w-4 h-4" />
+              일시 정지
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100"
+            >
+              닫기
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminShippingCompaniesPage() {
   const [companies, setCompanies] = useState<ShippingCompany[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'verified'>('pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCompany, setSelectedCompany] = useState<ShippingCompany | null>(null);
+  const [detailCompany, setDetailCompany] = useState<ShippingCompany | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, pending: 0, verified: 0 });
 
@@ -445,10 +871,19 @@ export default function AdminShippingCompaniesPage() {
 
                   <div className="flex items-center gap-2">
                     {company.isVerified ? (
-                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                        <CheckCircle2 className="w-4 h-4" />
-                        승인됨
-                      </span>
+                      <>
+                        <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle2 className="w-4 h-4" />
+                          승인됨
+                        </span>
+                        <button
+                          onClick={() => setDetailCompany(company)}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>상세</span>
+                        </button>
+                      </>
                     ) : (
                       <button
                         onClick={() => setSelectedCompany(company)}
@@ -473,6 +908,15 @@ export default function AdminShippingCompaniesPage() {
           onClose={() => setSelectedCompany(null)}
           onConfirm={handleApproval}
           loading={actionLoading}
+        />
+      )}
+
+      {/* 상세 모달 */}
+      {detailCompany && (
+        <DetailModal
+          company={detailCompany}
+          onClose={() => setDetailCompany(null)}
+          onUpdate={fetchCompanies}
         />
       )}
     </div>

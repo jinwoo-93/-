@@ -101,9 +101,9 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { action, reason } = body; // action: 'approve' | 'reject'
+    const { action, reason, depositBalance, hasExcellentBadge } = body; // action: 'approve' | 'reject' | 'suspend' | 'activate' | 'update'
 
-    if (!action || !['approve', 'reject'].includes(action)) {
+    if (!action || !['approve', 'reject', 'suspend', 'activate', 'update'].includes(action)) {
       return NextResponse.json(
         { success: false, error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 액션입니다.' } },
         { status: 400 }
@@ -150,7 +150,7 @@ export async function PATCH(
         data: updatedCompany,
         message: '배송업체가 승인되었습니다.',
       });
-    } else {
+    } else if (action === 'reject') {
       // 거부 처리 - 삭제
       await prisma.shippingCompany.delete({
         where: { id: params.id },
@@ -172,6 +172,84 @@ export async function PATCH(
       return NextResponse.json({
         success: true,
         message: '배송업체 등록이 거부되었습니다.',
+      });
+    } else if (action === 'suspend') {
+      // 일시 정지 처리
+      const updatedCompany = await prisma.shippingCompany.update({
+        where: { id: params.id },
+        data: {
+          isVerified: false,
+          verifiedAt: null,
+        },
+      });
+
+      // 알림
+      if (company.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: company.userId,
+            type: 'SYSTEM',
+            title: '배송업체 일시 정지',
+            message: `${company.name} 배송업체가 일시 정지되었습니다. 자세한 내용은 고객센터에 문의해주세요.`,
+            link: '/support',
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: updatedCompany,
+        message: '배송업체가 일시 정지되었습니다.',
+      });
+    } else if (action === 'activate') {
+      // 재활성화 처리
+      const updatedCompany = await prisma.shippingCompany.update({
+        where: { id: params.id },
+        data: {
+          isVerified: true,
+          verifiedAt: new Date(),
+        },
+      });
+
+      // 알림
+      if (company.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: company.userId,
+            type: 'SYSTEM',
+            title: '배송업체 재활성화',
+            message: `${company.name} 배송업체가 다시 활성화되었습니다. 서비스 이용이 가능합니다.`,
+            link: '/shipping/dashboard',
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: updatedCompany,
+        message: '배송업체가 활성화되었습니다.',
+      });
+    } else if (action === 'update') {
+      // 정보 업데이트
+      const updateData: any = {};
+
+      if (depositBalance !== undefined) {
+        updateData.depositBalance = depositBalance;
+      }
+
+      if (hasExcellentBadge !== undefined) {
+        updateData.hasExcellentBadge = hasExcellentBadge;
+      }
+
+      const updatedCompany = await prisma.shippingCompany.update({
+        where: { id: params.id },
+        data: updateData,
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: updatedCompany,
+        message: '배송업체 정보가 수정되었습니다.',
       });
     }
   } catch (error) {
