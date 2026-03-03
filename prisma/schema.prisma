@@ -1380,3 +1380,83 @@ enum SettlementStatus {
   PAID       // 지급 완료
   REJECTED   // 거부
 }
+
+// ==================== 광고 관리 ====================
+
+model Advertisement {
+  id            String      @id @default(cuid())
+  title         String
+  titleZh       String?
+  description   String?     @db.Text
+  imageUrl      String
+  linkUrl       String
+
+  // 게재 위치
+  placement     AdPlacement @default(HOME_BANNER)
+
+  // 상태
+  status        AdStatus    @default(DRAFT)
+
+  // 스케줄
+  startDate     DateTime
+  endDate       DateTime
+
+  // 성과
+  impressions   Int         @default(0)
+  clicks        Int         @default(0)
+
+  // 비용
+  budget        Int?        // KRW
+  spent         Int         @default(0)
+
+  // 타겟팅
+  targetCountry String?
+  targetUserType String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status])
+  @@index([placement])
+  @@index([startDate, endDate])
+}
+
+enum AdPlacement {
+  HOME_BANNER        // 메인 배너
+  HOME_SIDEBAR       // 메인 사이드바
+  CATEGORY_TOP       // 카테고리 상단
+  SEARCH_RESULTS     // 검색 결과
+  POST_DETAIL        // 상품 상세
+}
+
+enum AdStatus {
+  DRAFT              // 초안
+  SCHEDULED          // 예약됨
+  ACTIVE             // 게재중
+  PAUSED             // 일시정지
+  ENDED              // 종료
+  REJECTED           // 거부됨
+}
+
+// ==================== 시스템 설정 ====================
+
+model SystemSetting {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  value       String           @db.Text
+  category    SettingCategory
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now())
+
+  @@index([category])
+}
+
+enum SettingCategory {
+  PLATFORM       // 플랫폼 설정
+  PAYMENT        // 결제 설정
+  SHIPPING       // 배송 설정
+  NOTIFICATION   // 알림 설정
+  SECURITY       // 보안 설정
+}

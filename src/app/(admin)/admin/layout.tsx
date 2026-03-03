@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -36,7 +37,17 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
+
+  // 세션 자동 갱신 (5분마다)
+  useEffect(() => {
+    if (status === 'authenticated') {
+      const interval = setInterval(() => {
+        update();
+      }, 5 * 60 * 1000); // 5분
+      return () => clearInterval(interval);
+    }
+  }, [status, update]);
 
   if (status === 'loading') {
     return (
@@ -47,7 +58,7 @@ export default function AdminLayout({
   }
 
   if (!session || session.user?.userType !== 'ADMIN') {
-    redirect('/login?callbackUrl=/admin');
+    redirect('/admin-login');
   }
 
   return (

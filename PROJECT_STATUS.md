@@ -13,8 +13,8 @@
 | **설명** | 한국↔중국 양방향 크로스보더 C2C 마켓플레이스 |
 | **프레임워크** | Next.js 14.2 (App Router) + TypeScript |
 | **DB** | Supabase PostgreSQL + Prisma ORM |
-| **배포** | Vercel (미배포 — 로컬 개발 중) |
-| **도메인** | 미설정 (Vercel 배포 후 할당 예정) |
+| **배포** | Vercel (프로덕션 배포 완료 ✅) |
+| **도메인** | https://jikguyeokgu.vercel.app |
 | **로컬 URL** | http://localhost:3000 |
 | **빌드 상태** | ✅ 정상 (56페이지, 에러 없음) |
 
