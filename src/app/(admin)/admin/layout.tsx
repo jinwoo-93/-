@@ -96,7 +96,7 @@ export default function AdminLayout({
       {/* 메인 콘텐츠 */}
       <main className="ml-64 min-h-screen">
         {/* 헤더 */}
-        <header className="bg-white border-b px-6 py-4 sticky top-0 z-10">
+        <header className="bg-white border-b px-8 py-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold">관리자 페이지</h1>
             <div className="flex items-center gap-4">
@@ -108,7 +108,7 @@ export default function AdminLayout({
         </header>
 
         {/* 콘텐츠 */}
-        <div className="p-6">
+        <div className="p-8">
           {children}
         </div>
       </main>

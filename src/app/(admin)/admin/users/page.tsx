@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
   });
 
   return (
-    <div className="container-app py-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Users className="h-6 w-6 text-primary" />
