@@ -62,8 +62,32 @@ export const authConfig: NextAuthConfig = {
       return session;
     },
     async redirect({ url, baseUrl }) {
+      // Relative URL인 경우 baseUrl과 결합
       if (url.startsWith('/')) return `${baseUrl}${url}`;
+
+      // 같은 origin의 URL인 경우 그대로 사용
       if (new URL(url).origin === baseUrl) return url;
+
+      // OAuth 콜백에서 callbackUrl 파라미터 확인
+      try {
+        const urlObj = new URL(url);
+        const callbackUrl = urlObj.searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          // callbackUrl이 절대 경로인 경우
+          if (callbackUrl.startsWith('/')) {
+            return `${baseUrl}${callbackUrl}`;
+          }
+          // callbackUrl이 같은 origin인 경우
+          const callbackUrlObj = new URL(callbackUrl);
+          if (callbackUrlObj.origin === baseUrl) {
+            return callbackUrl;
+          }
+        }
+      } catch {
+        // URL 파싱 실패 시 무시
+      }
+
+      // 기본값: 메인 페이지
       return baseUrl;
     },
     authorized({ auth, request: { nextUrl } }) {
@@ -76,6 +100,11 @@ export const authConfig: NextAuthConfig = {
                               nextUrl.pathname.startsWith('/orders') ||
                               nextUrl.pathname.startsWith('/messages') ||
                               nextUrl.pathname.startsWith('/posts/create');
+
+      // NextAuth callback routes는 항상 허용
+      if (nextUrl.pathname.startsWith('/api/auth')) {
+        return true;
+      }
 
       // 관리자 로그인 페이지는 예외 처리 (미들웨어에서 리다이렉트 안 함)
       if (isAdminLoginPage) {

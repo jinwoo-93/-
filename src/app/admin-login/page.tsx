@@ -60,8 +60,10 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
+      // 절대 URL로 callbackUrl 설정
+      const callbackUrl = `${window.location.origin}/admin`;
       await signIn(provider, {
-        callbackUrl: '/admin',
+        callbackUrl,
       });
     } catch (error) {
       setError('로그인 중 오류가 발생했습니다.');
