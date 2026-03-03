@@ -25,6 +25,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useToast } from '@/hooks/useToast';
 import { formatDate } from '@/lib/utils';
+import { PostDetailModal } from '@/components/admin/PostDetailModal';
 
 interface Post {
   id: string;
@@ -71,6 +72,8 @@ export default function AdminPostsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -361,6 +364,16 @@ export default function AdminPostsPage() {
 
                   {/* 액션 버튼 */}
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedPostId(post.id);
+                        setIsDetailModalOpen(true);
+                      }}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
                     <Link href={`/posts/${post.id}`} target="_blank">
                       <Button variant="outline" size="sm">
                         <ExternalLink className="w-4 h-4" />
@@ -403,6 +416,17 @@ export default function AdminPostsPage() {
           {language === 'ko' ? '총' : '共'} {filteredPosts.length}{language === 'ko' ? '개' : '个'}
         </div>
       )}
+
+      {/* 상품 상세 모달 */}
+      <PostDetailModal
+        postId={selectedPostId}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedPostId(null);
+        }}
+        onUpdate={fetchPosts}
+      />
     </div>
   );
 }

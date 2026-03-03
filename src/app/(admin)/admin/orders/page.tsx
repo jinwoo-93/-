@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { LoadingPage } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { OrderDetailModal } from '@/components/admin/OrderDetailModal';
 
 interface Order {
   id: string;
@@ -67,9 +68,10 @@ interface Stats {
 const statusMap: Record<string, { ko: string; zh: string; color: string }> = {
   PENDING_PAYMENT: { ko: '결제대기', zh: '待付款', color: 'bg-yellow-100 text-yellow-800' },
   PAID: { ko: '결제완료', zh: '已付款', color: 'bg-blue-100 text-blue-800' },
-  SHIPPED: { ko: '배송중', zh: '运输中', color: 'bg-purple-100 text-purple-800' },
+  SHIPPING: { ko: '배송중', zh: '运输中', color: 'bg-purple-100 text-purple-800' },
   DELIVERED: { ko: '배송완료', zh: '已送达', color: 'bg-green-100 text-green-800' },
   CONFIRMED: { ko: '구매확정', zh: '确认收货', color: 'bg-emerald-100 text-emerald-800' },
+  DISPUTED: { ko: '분쟁중', zh: '争议中', color: 'bg-orange-100 text-orange-800' },
   CANCELLED: { ko: '취소', zh: '已取消', color: 'bg-gray-100 text-gray-800' },
   REFUNDED: { ko: '환불', zh: '已退款', color: 'bg-red-100 text-red-800' },
 };
@@ -87,6 +89,8 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -300,6 +304,9 @@ export default function OrdersPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {language === 'ko' ? '주문일시' : '订单时间'}
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {language === 'ko' ? '작업' : '操作'}
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -378,6 +385,19 @@ export default function OrdersPage() {
                           })}
                         </p>
                       </td>
+                      <td className="px-6 py-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedOrderId(order.id);
+                            setIsDetailModalOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          {language === 'ko' ? '상세' : '详情'}
+                        </Button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -415,6 +435,20 @@ export default function OrdersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 주문 상세 모달 */}
+      <OrderDetailModal
+        orderId={selectedOrderId}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedOrderId(null);
+        }}
+        onUpdate={() => {
+          fetchOrders();
+          fetchStats();
+        }}
+      />
     </div>
   );
 }
