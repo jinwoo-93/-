@@ -1,25 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   Users,
   Search,
   Filter,
-  Shield,
   Star,
-  Ban,
-  MoreHorizontal,
+  Eye,
+  Download,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LoadingPage } from '@/components/common/LoadingSpinner';
-import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/hooks/useLanguage';
+import { UserDetailModal } from '@/components/admin/UserDetailModal';
 import { formatDate } from '@/lib/utils';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface User {
   id: string;
@@ -38,26 +36,22 @@ interface User {
 }
 
 export default function AdminUsersPage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading, isAdmin } = useAuth();
   const { language } = useLanguage();
 
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated || !isAdmin) {
-        router.push('/');
-        return;
-      }
-      fetchUsers();
-    }
-  }, [authLoading, isAuthenticated, isAdmin]);
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/admin/users');
       const data = await response.json();
@@ -71,7 +65,34 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (authLoading || isLoading) return <LoadingPage />;
+  const handleUserClick = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleExport = () => {
+    // CSV 내보내기
+    const headers = ['이메일', '닉네임', '국가', '가입일', '거래수', '평점'];
+    const csvData = filteredUsers.map(user => [
+      user.email,
+      user.nickname,
+      user.country === 'KR' ? '한국' : '중국',
+      formatDate(user.createdAt, language),
+      user.totalSales + user.totalPurchases,
+      user.averageRating.toFixed(1),
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(',')),
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `users_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -83,23 +104,90 @@ export default function AdminUsersPage() {
     if (filter === 'excellent') return matchesSearch && user.hasExcellentBadge;
     if (filter === 'korea') return matchesSearch && user.country === 'KR';
     if (filter === 'china') return matchesSearch && user.country === 'CN';
+    if (filter === 'highActivity') {
+      return matchesSearch && (user.totalSales + user.totalPurchases) >= 10;
+    }
     return matchesSearch;
+  }).sort((a, b) => {
+    if (sortBy === 'createdAt') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortBy === 'trades') {
+      return (b.totalSales + b.totalPurchases) - (a.totalSales + a.totalPurchases);
+    }
+    if (sortBy === 'rating') {
+      return b.averageRating - a.averageRating;
+    }
+    return 0;
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Users className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold">
             {language === 'ko' ? '회원 관리' : '用户管理'}
           </h1>
+          <Badge variant="outline">{users.length} {language === 'ko' ? '명' : '人'}</Badge>
         </div>
-        <Badge variant="outline">{users.length} {language === 'ko' ? '명' : '人'}</Badge>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchUsers}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            새로고침
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            CSV 내보내기
+          </Button>
+        </div>
+      </div>
+
+      {/* 통계 카드 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm text-gray-600 mb-1">전체 회원</div>
+            <div className="text-2xl font-bold">{users.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm text-gray-600 mb-1">한국 회원</div>
+            <div className="text-2xl font-bold">
+              {users.filter(u => u.country === 'KR').length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm text-gray-600 mb-1">중국 회원</div>
+            <div className="text-2xl font-bold">
+              {users.filter(u => u.country === 'CN').length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm text-gray-600 mb-1">사업자 인증</div>
+            <div className="text-2xl font-bold">
+              {users.filter(u => u.isBusinessVerified).length}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 검색 및 필터 */}
-      <Card className="mb-6">
+      <Card>
         <CardContent className="pt-6">
           <div className="flex gap-4 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
@@ -111,17 +199,53 @@ export default function AdminUsersPage() {
                 className="pl-10"
               />
             </div>
+
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="all">{language === 'ko' ? '전체' : '全部'}</option>
-              <option value="verified">{language === 'ko' ? '사업자 인증' : '企业认证'}</option>
-              <option value="excellent">{language === 'ko' ? '우수 판매자' : '优秀卖家'}</option>
-              <option value="korea">{language === 'ko' ? '한국' : '韩国'}</option>
-              <option value="china">{language === 'ko' ? '중국' : '中国'}</option>
+              <option value="all">전체</option>
+              <option value="verified">사업자 인증</option>
+              <option value="excellent">우수 판매자</option>
+              <option value="korea">한국</option>
+              <option value="china">중국</option>
+              <option value="highActivity">활발한 회원 (10+ 거래)</option>
             </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="createdAt">가입일 순</option>
+              <option value="trades">거래 많은 순</option>
+              <option value="rating">평점 높은 순</option>
+            </select>
+          </div>
+
+          <div className="flex gap-2 mt-4 flex-wrap">
+            <Badge
+              variant="outline"
+              className="cursor-pointer hover:bg-gray-100"
+              onClick={() => setFilter('all')}
+            >
+              전체: {users.length}
+            </Badge>
+            <Badge
+              variant="default"
+              className="cursor-pointer hover:bg-blue-600"
+              onClick={() => setFilter('verified')}
+            >
+              사업자: {users.filter(u => u.isBusinessVerified).length}
+            </Badge>
+            <Badge
+              variant="secondary"
+              className="cursor-pointer hover:bg-gray-200"
+              onClick={() => setFilter('excellent')}
+            >
+              우수 판매자: {users.filter(u => u.hasExcellentBadge).length}
+            </Badge>
           </div>
         </CardContent>
       </Card>
@@ -132,31 +256,37 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '회원' : '用户'}
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    회원
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '국가' : '国家'}
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    국가
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '인증' : '认证'}
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    인증
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '거래' : '交易'}
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    거래
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '평점' : '评分'}
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    평점
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    {language === 'ko' ? '가입일' : '注册日期'}
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    가입일
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground"></th>
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
+                    작업
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-muted/50">
+                  <tr
+                    key={user.id}
+                    className="border-b hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleUserClick(user.id)}
+                  >
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
@@ -171,8 +301,11 @@ export default function AdminUsersPage() {
                             {user.hasExcellentBadge && (
                               <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                             )}
+                            {user.userType === 'ADMIN' && (
+                              <Badge variant="destructive" className="text-xs">관리자</Badge>
+                            )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -182,38 +315,49 @@ export default function AdminUsersPage() {
                       </Badge>
                     </td>
                     <td className="p-4">
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         {user.isPhoneVerified && (
                           <Badge variant="secondary" className="text-xs">
-                            {language === 'ko' ? '휴대폰' : '手机'}
+                            휴대폰
                           </Badge>
                         )}
                         {user.isBusinessVerified && (
                           <Badge variant="default" className="text-xs">
-                            {language === 'ko' ? '사업자' : '企业'}
+                            사업자
                           </Badge>
                         )}
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm">
+                      <span className="text-sm font-medium">
                         {user.totalSales + user.totalPurchases}
                       </span>
+                      <span className="text-xs text-gray-500 ml-1">건</span>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm">{user.averageRating.toFixed(1)}</span>
+                        <span className="text-sm font-medium">
+                          {user.averageRating.toFixed(1)}
+                        </span>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-gray-600">
                         {formatDate(user.createdAt, language).split(' ')[0]}
                       </span>
                     </td>
                     <td className="p-4">
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUserClick(user.id);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        상세
                       </Button>
                     </td>
                   </tr>
@@ -223,12 +367,29 @@ export default function AdminUsersPage() {
           </div>
 
           {filteredUsers.length === 0 && (
-            <div className="py-12 text-center text-muted-foreground">
-              {language === 'ko' ? '검색 결과가 없습니다' : '没有搜索结果'}
+            <div className="py-12 text-center text-gray-500">
+              {searchQuery ? '검색 결과가 없습니다' : '회원이 없습니다'}
+            </div>
+          )}
+
+          {filteredUsers.length > 0 && (
+            <div className="p-4 border-t bg-gray-50 text-sm text-gray-600">
+              총 {filteredUsers.length}명의 회원
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* 회원 상세 모달 */}
+      <UserDetailModal
+        userId={selectedUserId}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedUserId(null);
+        }}
+        onUpdate={fetchUsers}
+      />
     </div>
   );
 }
