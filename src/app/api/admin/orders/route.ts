@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
             id: true,
             title: true,
             titleZh: true,
-            mainImage: true,
+            images: true,
           },
         },
         shippingCompany: {

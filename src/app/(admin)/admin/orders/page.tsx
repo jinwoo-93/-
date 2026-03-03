@@ -42,7 +42,7 @@ interface Order {
     id: string;
     title: string;
     titleZh: string | null;
-    mainImage: string;
+    images: string[];
   };
   quantity: number;
   totalKRW: number;
@@ -316,7 +316,7 @@ export default function OrdersPage() {
                         <div className="flex items-center gap-3">
                           <div className="relative w-12 h-12 rounded overflow-hidden bg-gray-100 flex-shrink-0">
                             <Image
-                              src={order.post.mainImage}
+                              src={order.post.images[0] || '/placeholder.png'}
                               alt={order.post.title}
                               fill
                               className="object-cover"

@@ -56,7 +56,6 @@ export async function GET(
             id: true,
             title: true,
             titleZh: true,
-            mainImage: true,
             images: true,
           },
         },
@@ -170,7 +169,7 @@ export async function PATCH(
           select: {
             id: true,
             title: true,
-            mainImage: true,
+            images: true,
           },
         },
       },
