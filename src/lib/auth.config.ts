@@ -128,14 +128,9 @@ export const authConfig: NextAuthConfig = {
 
       // 관리자 페이지: 로그인 + ADMIN 역할 필요
       if (isAdminPage) {
-        // 관리자 로그인 페이지는 제외
-        if (nextUrl.pathname === '/admin/login') {
-          return true;
-        }
-
         if (!isLoggedIn) {
           // 로그인되지 않은 경우 관리자 로그인 페이지로
-          const loginUrl = new URL('/admin/login', nextUrl);
+          const loginUrl = new URL('/admin-login', nextUrl);
           return Response.redirect(loginUrl);
         }
 
