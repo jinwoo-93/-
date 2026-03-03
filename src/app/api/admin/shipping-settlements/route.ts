@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-// 정산 목록 조회
+// 배송업체 정산 목록 조회
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -42,20 +42,21 @@ export async function GET(request: NextRequest) {
     }
 
     if (period) {
-      where.period = period;
+      const [year, month] = period.split('-').map(Number);
+      where.settlementYear = year;
+      where.settlementMonthNum = month;
     }
 
     const [settlements, total, stats] = await Promise.all([
-      prisma.sellerSettlement.findMany({
+      prisma.shippingSettlement.findMany({
         where,
         include: {
-          seller: {
+          company: {
             select: {
               id: true,
-              nickname: true,
-              email: true,
-              profileImage: true,
-              country: true,
+              name: true,
+              nameZh: true,
+              logo: true,
             },
           },
         },
@@ -63,49 +64,25 @@ export async function GET(request: NextRequest) {
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.sellerSettlement.count({ where }),
-      prisma.sellerSettlement.aggregate({
+      prisma.shippingSettlement.count({ where }),
+      prisma.shippingSettlement.aggregate({
         where: { status: 'PENDING' },
         _sum: {
-          settlementAmount: true,
+          finalAmount: true,
           platformFee: true,
         },
         _count: true,
       }),
     ]);
 
-    // 오늘 수수료 계산
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const todayOrders = await prisma.order.aggregate({
-      where: {
-        status: { in: ['DELIVERED', 'CONFIRMED'] },
-        paidAt: { gte: today },
-      },
-      _sum: { platformFeeKRW: true },
-    });
-
-    // 이번 달 수수료 계산
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthOrders = await prisma.order.aggregate({
-      where: {
-        status: { in: ['DELIVERED', 'CONFIRMED'] },
-        paidAt: { gte: monthStart },
-      },
-      _sum: { platformFeeKRW: true },
-    });
-
     return NextResponse.json({
       success: true,
       data: {
         settlements,
         stats: {
-          totalPending: stats._sum.settlementAmount || 0,
+          totalPending: stats._sum.finalAmount || 0,
           totalPlatformFee: stats._sum.platformFee || 0,
           pendingCount: stats._count,
-          todayRevenue: todayOrders._sum.platformFeeKRW || 0,
-          monthRevenue: monthOrders._sum.platformFeeKRW || 0,
         },
         pagination: {
           total,
@@ -116,7 +93,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Admin settlements GET error:', error);
+    console.error('Admin shipping settlements GET error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다.' } },
       { status: 500 }
@@ -124,7 +101,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 정산 자동 생성
+// 배송업체 정산 자동 생성
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
@@ -160,17 +137,18 @@ export async function POST(request: NextRequest) {
     }
 
     const [year, month] = period.split('-').map(Number);
+    const settlementMonth = new Date(year, month - 1, 1);
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
 
-    // 해당 기간의 모든 판매자 찾기
-    const sellers = await prisma.user.findMany({
+    // 해당 기간의 모든 배송업체 찾기
+    const companies = await prisma.shippingCompany.findMany({
       where: {
-        userType: { in: ['SELLER', 'BOTH'] },
-        ordersAsSeller: {
+        isVerified: true,
+        orders: {
           some: {
             status: { in: ['DELIVERED', 'CONFIRMED'] },
-            paidAt: {
+            deliveredAt: {
               gte: startDate,
               lte: endDate,
             },
@@ -179,23 +157,23 @@ export async function POST(request: NextRequest) {
       },
       select: {
         id: true,
-        nickname: true,
+        name: true,
         bankName: true,
         accountNumber: true,
         accountHolder: true,
-        isBusinessVerified: true,
       },
     });
 
     const createdSettlements = [];
 
-    for (const seller of sellers) {
+    for (const company of companies) {
       // 이미 정산이 생성되어 있는지 확인
-      const existing = await prisma.sellerSettlement.findUnique({
+      const existing = await prisma.shippingSettlement.findUnique({
         where: {
-          sellerId_period: {
-            sellerId: seller.id,
-            period,
+          companyId_settlementYear_settlementMonthNum: {
+            companyId: company.id,
+            settlementYear: year,
+            settlementMonthNum: month,
           },
         },
       });
@@ -207,48 +185,63 @@ export async function POST(request: NextRequest) {
       // 해당 기간의 주문 조회
       const orders = await prisma.order.findMany({
         where: {
-          sellerId: seller.id,
+          shippingCompanyId: company.id,
           status: { in: ['DELIVERED', 'CONFIRMED'] },
-          paidAt: {
+          deliveredAt: {
             gte: startDate,
             lte: endDate,
           },
         },
       });
 
-      // 환불 금액 조회
-      const refundOrders = await prisma.order.findMany({
+      const totalShipments = orders.length;
+      const totalRevenue = orders.reduce((sum, order) => sum + order.shippingFeeKRW, 0);
+
+      // 분쟁에서 배송사 책임 건수 조회
+      const disputes = await prisma.dispute.findMany({
         where: {
-          sellerId: seller.id,
-          status: 'REFUNDED',
-          paidAt: {
+          order: {
+            shippingCompanyId: company.id,
+          },
+          shippingCompanyLiable: true,
+          resolvedAt: {
             gte: startDate,
             lte: endDate,
           },
         },
       });
 
-      const totalSales = orders.reduce((sum, order) => sum + order.itemPriceKRW, 0);
-      const platformFee = orders.reduce((sum, order) => sum + order.platformFeeKRW, 0);
-      const shippingFee = orders.reduce((sum, order) => sum + order.shippingFeeKRW, 0);
-      const refundAmount = refundOrders.reduce((sum, order) => sum + order.totalKRW, 0);
-      const settlementAmount = totalSales - platformFee - refundAmount;
+      const damageDisputes = disputes.filter(d => d.compensationType === 'DAMAGE');
+      const lossDisputes = disputes.filter(d => d.compensationType === 'LOSS');
 
-      const settlement = await prisma.sellerSettlement.create({
+      const damageDeductions = damageDisputes.reduce((sum, d) => sum + (d.compensationAmount || 0), 0);
+      const lossDeductions = lossDisputes.reduce((sum, d) => sum + (d.compensationAmount || 0), 0);
+
+      const platformFeeRate = 0.05; // 5%
+      const platformFee = Math.floor(totalRevenue * platformFeeRate);
+
+      const grossAmount = totalRevenue;
+      const netAmount = grossAmount - damageDeductions - lossDeductions;
+      const finalAmount = netAmount - platformFee;
+
+      const settlement = await prisma.shippingSettlement.create({
         data: {
-          sellerId: seller.id,
-          period,
-          startDate,
-          endDate,
-          totalSales,
+          companyId: company.id,
+          settlementMonth,
+          settlementYear: year,
+          settlementMonthNum: month,
+          totalShipments,
+          totalRevenue,
+          damageDeductions,
+          damageCount: damageDisputes.length,
+          lossDeductions,
+          lossCount: lossDisputes.length,
           platformFee,
-          shippingFee,
-          refundAmount,
-          settlementAmount,
+          platformFeeRate,
+          grossAmount,
+          netAmount,
+          finalAmount,
           status: 'PENDING',
-          bankName: seller.bankName,
-          bankAccount: seller.accountNumber,
-          accountHolder: seller.accountHolder,
         },
       });
 
@@ -261,10 +254,10 @@ export async function POST(request: NextRequest) {
         created: createdSettlements.length,
         settlements: createdSettlements,
       },
-      message: `${createdSettlements.length}건의 정산이 생성되었습니다.`,
+      message: `${createdSettlements.length}건의 배송사 정산이 생성되었습니다.`,
     });
   } catch (error) {
-    console.error('Admin settlements POST error:', error);
+    console.error('Admin shipping settlements POST error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다.' } },
       { status: 500 }

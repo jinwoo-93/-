@@ -83,6 +83,7 @@ model User {
   messages           Message[] @relation("SentMessages")
   receivedMessages   Message[] @relation("ReceivedMessages")
   shippingCompany    ShippingCompany?   // UserType이 SHIPPING인 경우
+  sellerSettlements  SellerSettlement[] @relation("SellerSettlements")
 
   notificationSettings NotificationSettings?
 
@@ -1321,6 +1322,41 @@ enum OfferStatus {
   ACCEPTED
   REJECTED
   WITHDRAWN
+}
+
+// ==================== 판매자 정산 ====================
+
+model SellerSettlement {
+  id                String           @id @default(cuid())
+
+  sellerId          String
+  seller            User             @relation("SellerSettlements", fields: [sellerId], references: [id])
+
+  period            String           // 2024-01
+  startDate         DateTime
+  endDate           DateTime
+
+  totalSales        Int              @default(0) // 총 판매액
+  platformFee       Int              @default(0) // 플랫폼 수수료
+  shippingFee       Int              @default(0) // 배송비
+  refundAmount      Int              @default(0) // 환불액
+  settlementAmount  Int              @default(0) // 정산 금액
+
+  status            SettlementStatus @default(PENDING)
+
+  paidAt            DateTime?
+  bankAccount       String?
+  bankName          String?
+  accountHolder     String?
+
+  adminNote         String?          @db.Text
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([sellerId, period])
+  @@index([status, period])
+  @@index([sellerId])
 }
 
 // ==================== 배송업체 정산 (Phase 13) ====================
