@@ -2,7 +2,6 @@ import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
 import Naver from 'next-auth/providers/naver';
-import Credentials from 'next-auth/providers/credentials';
 
 // Edge Runtime 호환 설정 (미들웨어에서 사용)
 // PrismaAdapter, Prisma Client 등 Node.js 전용 모듈을 포함하지 않음
@@ -22,17 +21,7 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.NAVER_CLIENT_ID!,
       clientSecret: process.env.NAVER_CLIENT_SECRET!,
     }),
-    Credentials({
-      name: 'Phone',
-      credentials: {
-        phone: { label: 'Phone', type: 'tel' },
-        code: { label: 'Verification Code', type: 'text' },
-      },
-      async authorize() {
-        // 실제 인증 로직은 auth.ts에서 처리
-        return null;
-      },
-    }),
+    // Credentials Provider는 제거됨 - 소셜 로그인만 사용
   ],
   session: {
     strategy: 'jwt' as const,

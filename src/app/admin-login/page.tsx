@@ -2,56 +2,12 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { Shield, Loader2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
-        setIsLoading(false);
-        return;
-      }
-
-      // 로그인 성공 후 사용자 정보 확인
-      const response = await fetch('/api/auth/session');
-      const session = await response.json();
-
-      if (session?.user?.userType === 'ADMIN') {
-        // 관리자 권한 확인 후 대시보드로 이동
-        router.push('/admin');
-        router.refresh();
-      } else {
-        // 관리자 권한이 없는 경우
-        setError('관리자 권한이 필요합니다.');
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('로그인 중 오류가 발생했습니다.');
-      setIsLoading(false);
-    }
-  };
 
   const handleSocialLogin = async (provider: 'google' | 'naver' | 'kakao') => {
     setError('');
@@ -76,26 +32,26 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md p-8">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-3">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">관리자 로그인</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">관리자 로그인</h1>
           <p className="text-gray-600 text-sm">직구역구 Admin Dashboard</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 mb-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 mb-6">
             <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
 
         {/* 소셜 로그인 버튼 */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3">
           <button
             onClick={() => handleSocialLogin('google')}
-            disabled={!!socialLoading || isLoading}
+            disabled={!!socialLoading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {socialLoading === 'google' ? (
@@ -125,7 +81,7 @@ export default function AdminLoginPage() {
 
           <button
             onClick={() => handleSocialLogin('naver')}
-            disabled={!!socialLoading || isLoading}
+            disabled={!!socialLoading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#03C75A] hover:bg-[#02b350] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {socialLoading === 'naver' ? (
@@ -140,7 +96,7 @@ export default function AdminLoginPage() {
 
           <button
             onClick={() => handleSocialLogin('kakao')}
-            disabled={!!socialLoading || isLoading}
+            disabled={!!socialLoading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#FEE500] hover:bg-[#fee500dd] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {socialLoading === 'kakao' ? (
@@ -157,81 +113,19 @@ export default function AdminLoginPage() {
           </button>
         </div>
 
-        {/* 구분선 */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">또는</span>
-          </div>
-        </div>
-
-        {/* 이메일 로그인 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              이메일
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-              disabled={isLoading || !!socialLoading}
-            />
+        <div className="mt-8 text-center space-y-4">
+          <div className="pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              일반 사용자이신가요?{' '}
+              <a href="/" className="text-blue-600 hover:text-blue-700 font-medium">
+                메인으로 이동
+              </a>
+            </p>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              비밀번호
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-              disabled={isLoading || !!socialLoading}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5"
-            disabled={isLoading || !!socialLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                로그인 중...
-              </>
-            ) : (
-              <>
-                <Shield className="w-4 h-4 mr-2" />
-                이메일로 로그인
-              </>
-            )}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            일반 사용자이신가요?{' '}
-            <a href="/" className="text-blue-600 hover:text-blue-700 font-medium">
-              메인으로 이동
-            </a>
-          </p>
-        </div>
-
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center">
-            관리자 계정으로만 접근 가능합니다.
+          <p className="text-xs text-gray-500">
+            관리자 계정으로만 접근 가능합니다.<br />
+            소셜 로그인 후 관리자 권한이 확인됩니다.
           </p>
         </div>
       </Card>
