@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -60,11 +61,14 @@ export function AlipayButton({ orderId, onError }: AlipayButtonProps) {
       {/* 알리페이 안내 */}
       <Card className="p-4 bg-blue-50 border-blue-200">
         <div className="flex items-start gap-3">
-          <img
-            src="/images/payment/alipay-logo.svg"
-            alt="Alipay"
-            className="w-8 h-8"
-          />
+          <div className="relative w-8 h-8">
+            <Image
+              src="/images/payment/alipay-logo.svg"
+              alt="Alipay"
+              fill
+              className="object-contain"
+            />
+          </div>
           <div className="flex-1">
             <p className="font-medium text-blue-800">
               {language === 'ko' ? '알리페이 결제' : '支付宝支付'}
@@ -109,11 +113,14 @@ export function AlipayButton({ orderId, onError }: AlipayButtonProps) {
           </>
         ) : (
           <span className="flex items-center gap-2">
-            <img
-              src="/images/payment/alipay-white.svg"
-              alt=""
-              className="w-5 h-5"
-            />
+            <div className="relative w-5 h-5">
+              <Image
+                src="/images/payment/alipay-white.svg"
+                alt=""
+                fill
+                className="object-contain"
+              />
+            </div>
             {language === 'ko' ? '알리페이로 결제' : '支付宝支付'}
           </span>
         )}

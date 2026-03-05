@@ -96,8 +96,8 @@ export default function AdminUsersPage() {
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      (user.nickname || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.email || '').toLowerCase().includes(searchQuery.toLowerCase());
 
     if (filter === 'all') return matchesSearch;
     if (filter === 'verified') return matchesSearch && user.isBusinessVerified;

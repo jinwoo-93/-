@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Package,
   Search,
@@ -339,12 +340,13 @@ export default function SellerOrdersPage() {
               <div key={order.id} className="p-4 hover:bg-gray-50">
                 <div className="flex items-start gap-4">
                   {/* 상품 이미지 */}
-                  <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
+                  <div className="relative w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
                     {order.post.images[0] ? (
-                      <img
+                      <Image
                         src={order.post.images[0]}
                         alt={order.post.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

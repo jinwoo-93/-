@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Megaphone,
   Plus,
@@ -70,17 +71,7 @@ export default function AdsPage() {
     targetUserType: '',
   });
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated || !isAdmin) {
-        router.push('/');
-        return;
-      }
-      fetchAds();
-    }
-  }, [authLoading, isAuthenticated, isAdmin, statusFilter]);
-
-  const fetchAds = async () => {
+  const fetchAds = useCallback(async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
@@ -99,7 +90,17 @@ export default function AdsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!isAuthenticated || !isAdmin) {
+        router.push('/');
+        return;
+      }
+      fetchAds();
+    }
+  }, [authLoading, isAuthenticated, isAdmin, fetchAds, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -384,11 +385,14 @@ export default function AdsPage() {
                   <tr key={ad.id} className="border-b hover:bg-gray-50">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={ad.imageUrl}
-                          alt={ad.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
+                        <div className="relative w-16 h-16">
+                          <Image
+                            src={ad.imageUrl}
+                            alt={ad.title}
+                            fill
+                            className="object-cover rounded"
+                          />
+                        </div>
                         <div>
                           <p className="font-medium">{ad.title}</p>
                           <p className="text-xs text-gray-500 line-clamp-1">

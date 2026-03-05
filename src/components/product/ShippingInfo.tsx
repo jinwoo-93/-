@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Truck, Package, Star, Info } from 'lucide-react';
 
 interface ShippingInfoProps {
@@ -64,11 +65,14 @@ export default function ShippingInfo({
       {/* 배송업체 정보 */}
       <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
         {shippingCompany.logo ? (
-          <img
-            src={shippingCompany.logo}
-            alt={shippingCompany.name}
-            className="w-12 h-12 rounded-lg object-cover"
-          />
+          <div className="relative w-12 h-12">
+            <Image
+              src={shippingCompany.logo}
+              alt={shippingCompany.name}
+              fill
+              className="rounded-lg object-cover"
+            />
+          </div>
         ) : (
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
             <Truck className="w-6 h-6 text-blue-600" />

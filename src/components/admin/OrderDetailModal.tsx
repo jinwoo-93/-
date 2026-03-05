@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -332,11 +333,14 @@ export function OrderDetailModal({
               <CardContent>
                 <div className="flex gap-4">
                   {orderData.post.images[0] && (
-                    <img
-                      src={orderData.post.images[0]}
-                      alt={orderData.post.title}
-                      className="w-20 h-20 object-cover rounded"
-                    />
+                    <div className="relative w-20 h-20">
+                      <Image
+                        src={orderData.post.images[0]}
+                        alt={orderData.post.title}
+                        fill
+                        className="object-cover rounded"
+                      />
+                    </div>
                   )}
                   <div className="flex-1">
                     <p className="font-medium mb-2">{orderData.post.title}</p>

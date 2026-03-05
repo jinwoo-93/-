@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   DollarSign,
   Calendar,
@@ -70,17 +71,7 @@ export default function AdminSettlementsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated || !isAdmin) {
-        router.push('/');
-        return;
-      }
-      fetchData();
-    }
-  }, [authLoading, isAuthenticated, isAdmin, statusFilter]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [sellerRes, shippingRes] = await Promise.all([
@@ -107,7 +98,17 @@ export default function AdminSettlementsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!isAuthenticated || !isAdmin) {
+        router.push('/');
+        return;
+      }
+      fetchData();
+    }
+  }, [authLoading, isAuthenticated, isAdmin, fetchData, router]);
 
   const handleCreateSettlement = async () => {
     const now = new Date();
@@ -529,11 +530,14 @@ export default function AdminSettlementsPage() {
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             {settlement.company.logo && (
-                              <img
-                                src={settlement.company.logo}
-                                alt={settlement.company.name}
-                                className="w-8 h-8 rounded object-cover"
-                              />
+                              <div className="relative w-8 h-8">
+                                <Image
+                                  src={settlement.company.logo}
+                                  alt={settlement.company.name}
+                                  fill
+                                  className="rounded object-cover"
+                                />
+                              </div>
                             )}
                             <p className="font-medium">{settlement.company.name}</p>
                           </div>

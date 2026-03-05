@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -229,12 +230,14 @@ export function PostDetailModal({
                 {postData.images && postData.images.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
                     {postData.images.map((img: string, idx: number) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt={`상품 이미지 ${idx + 1}`}
-                        className="w-full h-24 object-cover rounded"
-                      />
+                      <div key={idx} className="relative w-full h-24">
+                        <Image
+                          src={img}
+                          alt={`상품 이미지 ${idx + 1}`}
+                          fill
+                          className="object-cover rounded"
+                        />
+                      </div>
                     ))}
                   </div>
                 )}

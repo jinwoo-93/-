@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import {
   Truck,
   Search,
@@ -76,7 +77,9 @@ function ApprovalModal({ company, onClose, onConfirm, loading }: ApprovalModalPr
           <div className="bg-gray-50 p-4 rounded-lg space-y-3">
             <div className="flex items-center gap-3">
               {company.logo ? (
-                <img src={company.logo} alt={company.name} className="w-12 h-12 rounded-lg object-cover" />
+                <div className="relative w-12 h-12">
+                  <Image src={company.logo} alt={company.name} fill className="rounded-lg object-cover" />
+                </div>
               ) : (
                 <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
                   <Truck className="w-6 h-6 text-gray-400" />
@@ -317,7 +320,9 @@ function DetailModal({ company, onClose, onUpdate }: DetailModalProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {company.logo ? (
-                <img src={company.logo} alt={company.name} className="w-16 h-16 rounded-lg object-cover" />
+                <div className="relative w-16 h-16">
+                  <Image src={company.logo} alt={company.name} fill className="rounded-lg object-cover" />
+                </div>
               ) : (
                 <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                   <Truck className="w-8 h-8 text-gray-400" />
@@ -639,11 +644,7 @@ export default function AdminShippingCompaniesPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, pending: 0, verified: 0 });
 
-  useEffect(() => {
-    fetchCompanies();
-  }, [filter]);
-
-  const fetchCompanies = async () => {
+  const fetchCompanies = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/shipping-companies?status=${filter}`);
@@ -669,7 +670,11 @@ export default function AdminShippingCompaniesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   const handleApproval = async (action: 'approve' | 'reject', reason?: string) => {
     if (!selectedCompany) return;
@@ -799,11 +804,14 @@ export default function AdminShippingCompaniesPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
                     {company.logo ? (
-                      <img
-                        src={company.logo}
-                        alt={company.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
+                      <div className="relative w-16 h-16">
+                        <Image
+                          src={company.logo}
+                          alt={company.name}
+                          fill
+                          className="rounded-lg object-cover"
+                        />
+                      </div>
                     ) : (
                       <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                         <Truck className="w-8 h-8 text-gray-400" />

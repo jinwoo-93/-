@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -305,11 +306,14 @@ export function UserDetailModal({
                             className="flex items-center gap-3 p-2 rounded hover:bg-gray-50"
                           >
                             {post.images[0] && (
-                              <img
-                                src={post.images[0]}
-                                alt={post.title}
-                                className="w-12 h-12 object-cover rounded"
-                              />
+                              <div className="relative w-12 h-12">
+                                <Image
+                                  src={post.images[0]}
+                                  alt={post.title}
+                                  fill
+                                  className="object-cover rounded"
+                                />
+                              </div>
                             )}
                             <div className="flex-1">
                               <p className="font-medium text-sm">{post.title}</p>
@@ -344,11 +348,14 @@ export function UserDetailModal({
                             className="flex items-center gap-3 p-2 rounded hover:bg-gray-50"
                           >
                             {order.post.images[0] && (
-                              <img
-                                src={order.post.images[0]}
-                                alt={order.post.title}
-                                className="w-12 h-12 object-cover rounded"
-                              />
+                              <div className="relative w-12 h-12">
+                                <Image
+                                  src={order.post.images[0]}
+                                  alt={order.post.title}
+                                  fill
+                                  className="object-cover rounded"
+                                />
+                              </div>
                             )}
                             <div className="flex-1">
                               <p className="font-medium text-sm">{order.post.title}</p>
@@ -390,11 +397,14 @@ export function UserDetailModal({
                             className="flex items-center gap-3 p-2 rounded hover:bg-gray-50"
                           >
                             {order.post.images[0] && (
-                              <img
-                                src={order.post.images[0]}
-                                alt={order.post.title}
-                                className="w-12 h-12 object-cover rounded"
-                              />
+                              <div className="relative w-12 h-12">
+                                <Image
+                                  src={order.post.images[0]}
+                                  alt={order.post.title}
+                                  fill
+                                  className="object-cover rounded"
+                                />
+                              </div>
                             )}
                             <div className="flex-1">
                               <p className="font-medium text-sm">{order.post.title}</p>
